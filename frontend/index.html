@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoamAI - Intelligent AI Travel Planner</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    <!-- html2pdf.js Library for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <!-- Background Animated Blurs -->
+    <div class="bg-blur bg-blur-1"></div>
+    <div class="bg-blur bg-blur-2"></div>
+
+    <div class="app-container">
+        <!-- Header / Navigation -->
+        <header>
+            <div class="logo">
+                <i class="fa-solid fa-compass-drafting logo-icon"></i>
+                <h1>Roam<span>AI</span></h1>
+            </div>
+            <div class="tagline">Your personal AI concierge</div>
+        </header>
+
+        <main>
+            <!-- Form Section -->
+            <section id="form-section" class="glass-card fade-in">
+                <div class="card-header">
+                    <i class="fa-solid fa-earth-americas header-icon"></i>
+                    <h2>Plan Your Next Adventure</h2>
+                    <p>Enter your details and let our AI compile the perfect itinerary tailored to your tastes.</p>
+                </div>
+
+                <form id="travel-form" onsubmit="event.preventDefault(); handleFormSubmit();">
+                    <!-- Destination Input -->
+                    <div class="form-group">
+                        <label for="destination">
+                            <i class="fa-solid fa-location-dot"></i> Where do you want to go?
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="text" id="destination" name="destination" placeholder="e.g. Goa, Paris, Kyoto..." required autocomplete="off">
+                            <i class="fa-solid fa-map-pin input-decor"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <!-- Duration Input -->
+                        <div class="form-group col">
+                            <label for="days">
+                                <i class="fa-solid fa-calendar-days"></i> Duration (Days)
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="number" id="days" name="days" min="1" max="30" value="5" required>
+                            </div>
+                        </div>
+
+                        <!-- Budget Input -->
+                        <div class="form-group col">
+                            <label for="budget">
+                                <i class="fa-solid fa-indian-rupee-sign"></i> Total Budget (INR)
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="number" id="budget" name="budget" min="1000" placeholder="e.g. 25000" value="25000" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interests Selection (Multi-select Checkbox pills) -->
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-heart"></i> Select Your Interests</label>
+                        <div class="interests-grid">
+                            <!-- Adventure -->
+                            <label class="interest-pill-label">
+                                <input type="checkbox" name="interests" value="Adventure" class="hidden-checkbox">
+                                <div class="interest-pill">
+                                    <i class="fa-solid fa-person-hiking"></i>
+                                    <span>Adventure</span>
+                                </div>
+                            </label>
+                            <!-- Food -->
+                            <label class="interest-pill-label">
+                                <input type="checkbox" name="interests" value="Food" class="hidden-checkbox" checked>
+                                <div class="interest-pill">
+                                    <i class="fa-solid fa-utensils"></i>
+                                    <span>Food</span>
+                                </div>
+                            </label>
+                            <!-- Beaches -->
+                            <label class="interest-pill-label">
+                                <input type="checkbox" name="interests" value="Beaches" class="hidden-checkbox" checked>
+                                <div class="interest-pill">
+                                    <i class="fa-solid fa-umbrella-beach"></i>
+                                    <span>Beaches</span>
+                                </div>
+                            </label>
+                            <!-- History -->
+                            <label class="interest-pill-label">
+                                <input type="checkbox" name="interests" value="History" class="hidden-checkbox">
+                                <div class="interest-pill">
+                                    <i class="fa-solid fa-landmark"></i>
+                                    <span>History</span>
+                                </div>
+                            </label>
+                            <!-- Nature -->
+                            <label class="interest-pill-label">
+                                <input type="checkbox" name="interests" value="Nature" class="hidden-checkbox">
+                                <div class="interest-pill">
+                                    <i class="fa-solid fa-tree"></i>
+                                    <span>Nature</span>
+                                </div>
+                            </label>
+                            <!-- Nightlife -->
+                            <label class="interest-pill-label">
+                                <input type="checkbox" name="interests" value="Nightlife" class="hidden-checkbox">
+                                <div class="interest-pill">
+                                    <i class="fa-solid fa-champagne-glasses"></i>
+                                    <span>Nightlife</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="generate-btn" class="btn primary-btn">
+                        <span>Generate Itinerary</span>
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Loading Spinner State -->
+            <section id="loader-section" class="glass-card hidden text-center">
+                <div class="loader-container">
+                    <div class="spinner">
+                        <i class="fa-solid fa-plane spinner-plane"></i>
+                        <div class="spinner-ring"></div>
+                    </div>
+                    <h3 id="loader-status">Consulting Travel AI...</h3>
+                    <p class="loader-sub">Preparing flight routes, scanning weather charts, and mapping activities.</p>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section id="results-section" class="hidden fade-in">
+                <!-- Action Controls (Above PDF to prevent layout break) -->
+                <div class="results-controls">
+                    <button onclick="regenerateItinerary()" class="btn secondary-btn">
+                        <i class="fa-solid fa-rotate"></i> Regenerate Itinerary
+                    </button>
+                    <button onclick="exportToPDF()" class="btn success-btn">
+                        <i class="fa-solid fa-file-pdf"></i> Export to PDF
+                    </button>
+                    <button onclick="goBackToForm()" class="btn link-btn">
+                        <i class="fa-solid fa-arrow-left"></i> Change Inputs
+                    </button>
+                </div>
+
+                <!-- Exportable Area (This container is targeted by html2pdf) -->
+                <div id="pdf-export-area" class="pdf-container">
+                    <!-- Dest & Weather Banner -->
+                    <div class="results-header-banner glass-card">
+                        <div class="header-banner-details">
+                            <div class="banner-title-group">
+                                <i class="fa-solid fa-route banner-icon"></i>
+                                <div>
+                                    <span class="badge">AI Generated Plan</span>
+                                    <h2 id="result-destination-title">Paris</h2>
+                                </div>
+                            </div>
+                            <!-- Weather Card inside Banner -->
+                            <div id="weather-card" class="weather-widget">
+                                <div class="weather-icon-box">
+                                    <i id="weather-icon" class="fa-solid fa-cloud-sun"></i>
+                                </div>
+                                <div class="weather-text-box">
+                                    <span class="weather-temp" id="result-temperature">24°C</span>
+                                    <span class="weather-desc" id="result-condition">Partly Cloudy</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Budget Overview Bar -->
+                        <div class="budget-badge-container">
+                            <div class="budget-item">
+                                <span class="label">Trip Budget</span>
+                                <span class="val" id="result-total-budget">₹25,000</span>
+                            </div>
+                            <div class="budget-item">
+                                <span class="label">Est. Expenses</span>
+                                <span class="val highlight" id="result-estimated-budget">₹18,500</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Real-Time Local Spotlights -->
+                    <div id="realtime-spotlights-card" class="glass-card spotlights-card">
+                        <div class="spotlights-header">
+                            <i class="fa-solid fa-location-crosshairs spotlights-header-icon"></i>
+                            <div>
+                                <h3>Real-Time Local Spotlights</h3>
+                                <p class="spotlights-subtitle">Live recommendations resolved via OpenStreetMap</p>
+                            </div>
+                        </div>
+                        <div class="spotlights-tabs">
+                            <button class="spotlight-tab-btn active" onclick="switchSpotlightTab('hotels')">
+                                <i class="fa-solid fa-hotel"></i> Stay Recommendations
+                            </button>
+                            <button class="spotlight-tab-btn" onclick="switchSpotlightTab('restaurants')">
+                                <i class="fa-solid fa-utensils"></i> Local Restaurants
+                            </button>
+                            <button class="spotlight-tab-btn" onclick="switchSpotlightTab('attractions')">
+                                <i class="fa-solid fa-landmark"></i> Top Attractions
+                            </button>
+                        </div>
+                        <div class="spotlights-content">
+                            <div id="spotlight-list-hotels" class="spotlight-list active">
+                                <!-- Hotels injected here -->
+                            </div>
+                            <div id="spotlight-list-restaurants" class="spotlight-list">
+                                <!-- Restaurants injected here -->
+                            </div>
+                            <div id="spotlight-list-attractions" class="spotlight-list">
+                                <!-- Attractions injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Daily Itinerary Cards Container -->
+                    <div id="itinerary-days-container" class="itinerary-grid">
+                        <!-- Cards will be dynamically injected here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2026 RoamAI. Powered by Flask, OpenWeatherMap & Grok API.</p>
+        </footer>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
