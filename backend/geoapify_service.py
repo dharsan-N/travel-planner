@@ -399,7 +399,7 @@ class NominatimFallback:
 # RealDataService  —  Main aggregator
 # =============================================================================
 
-class RealDataService:
+class GeoapifyService:
     """
     Orchestrates Geoapify (primary) or OSM Nominatim (fallback) to build a rich
     place-data context dict for the Groq LLM itinerary prompt.
@@ -407,19 +407,19 @@ class RealDataService:
     Pipeline:
       1. Geocode destination → (lat, lon, country, timezone)
       2. Places search → hotels, restaurants, attractions
-      3. Return structured dict consumed by ItineraryService
+      3. Return structured dict consumed by GroqService
     """
 
     def __init__(self):
         api_key = os.environ.get("GEOAPAFY_API_KEY", "").strip()
 
         if api_key:
-            logger.info("[RealDataService] Using Geoapify as primary data source.")
+            logger.info("[GeoapifyService] Using Geoapify as primary data source.")
             self._geocoder = GeoapifyGeocoder(api_key)
             self._places   = GeoapifyPlacesClient(api_key)
             self._mode     = "geoapify"
         else:
-            logger.warning("[RealDataService] GEOAPAFY_API_KEY not set — falling back to OSM Nominatim.")
+            logger.warning("[GeoapifyService] GEOAPAFY_API_KEY not set — falling back to OSM Nominatim.")
             self._osm  = NominatimFallback()
             self._mode = "osm"
 
@@ -442,7 +442,7 @@ class RealDataService:
         # Step 1 — Geocode
         lat, lon, resolved_name, country, timezone = self._geocoder.geocode(destination)
         if lat is None:
-            logger.error(f"[RealDataService] Geocoding failed for '{destination}'. Trying OSM fallback.")
+            logger.error(f"[GeoapifyService] Geocoding failed for '{destination}'. Trying OSM fallback.")
             # Try OSM as last resort
             osm       = NominatimFallback()
             lat, lon, resolved_name, country, timezone = osm.geocode(destination)
@@ -462,7 +462,7 @@ class RealDataService:
         attractions = attractions[:8]
 
         logger.info(
-            f"[RealDataService][Geoapify] '{destination}' → "
+            f"[GeoapifyService][Geoapify] '{destination}' → "
             f"Hotels: {len(hotels)}, Restaurants: {len(restaurants)}, "
             f"Attractions: {len(attractions)}"
         )
@@ -499,7 +499,7 @@ class RealDataService:
         attractions = self._osm.get_attractions(bbox)
 
         logger.info(
-            f"[RealDataService][OSM] '{destination}' → "
+            f"[GeoapifyService][OSM] '{destination}' → "
             f"Hotels: {len(hotels)}, Restaurants: {len(restaurants)}, "
             f"Attractions: {len(attractions)}"
         )

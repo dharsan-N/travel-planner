@@ -1,12 +1,12 @@
 import os
-import random
 import logging
+import requests
 
 # Configure logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class WeatherService:
+class OpenWeatherService:
     def __init__(self):
         # Fetch the OpenWeatherMap API key from environment variables
         self.api_key = os.environ.get("OPENWEATHERMAP_API_KEY")
@@ -29,8 +29,7 @@ class WeatherService:
             }
             logger.info(f"Fetching real-time weather from OpenWeatherMap for destination: {destination}")
             
-            # 10 second timeout for network call resiliency
-            response = requests_get_with_timeout_if_needed(self.base_url, params=params, timeout=10)
+            response = requests.get(self.base_url, params=params, timeout=10)
             
             if response.status_code == 200:
                 data = response.json()
@@ -70,32 +69,3 @@ class WeatherService:
             "temperature": f"{base_temp}°C",
             "condition": condition
         }
-
-# We dynamically import requests inside the function if it runs, or handle standard imports
-try:
-    import requests
-    def requests_get_with_timeout_if_needed(url, params=None, timeout=10):
-        return requests.get(url, params=params, timeout=timeout)
-except ImportError:
-    # Fallback to standard library urllib in case requests package is not installed yet (e.g. before initial npm/pip setup)
-    import urllib.request
-    import urllib.parse
-    import json
-    
-    class MockResponse:
-        def __init__(self, data, status_code):
-            self.data = data
-            self.status_code = status_code
-            self.text = json.dumps(data)
-        def json(self):
-            return self.data
-
-    def requests_get_with_timeout_if_needed(url, params=None, timeout=10):
-        if params:
-            url = f"{url}?{urllib.parse.urlencode(params)}"
-        req = urllib.request.Request(url)
-        try:
-            with urllib.request.urlopen(req, timeout=timeout) as response:
-                return MockResponse(json.loads(response.read().decode()), response.status)
-        except Exception as e:
-            raise e

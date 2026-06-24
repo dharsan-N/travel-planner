@@ -1,16 +1,13 @@
 import os
 import json
 import logging
-import random
 import urllib.request
-import urllib.parse
-import urllib.error
-from real_data_service import RealDataService
+from geoapify_service import GeoapifyService
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class ItineraryService:
+class GrokService:
     def __init__(self):
         # Support both GROQ_API_KEY and legacy GROK_API_KEY
         self.api_key = (
@@ -29,7 +26,7 @@ class ItineraryService:
             
         self.base_url = os.environ.get("LLM_BASE_URL", default_url)
         self.model    = os.environ.get("LLM_MODEL",    default_model)
-        self.real_data_service = RealDataService()
+        self.geoapify_service = GeoapifyService()
 
     def generate_itinerary(
         self,
@@ -50,7 +47,7 @@ class ItineraryService:
         per_person_budget = budget // num_people
 
         # 1. Fetch real place data from Geoapify (or OSM Nominatim fallback)
-        realtime_data = self.real_data_service.get_all_data(destination) or {
+        realtime_data = self.geoapify_service.get_all_data(destination) or {
             "resolved_name": destination,
             "hotels": [],
             "restaurants": [],

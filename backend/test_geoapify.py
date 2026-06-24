@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv(".env")
 
 import os
-from real_data_service import RealDataService, GeoapifyGeocoder, GeoapifyPlacesClient
+from geoapify_service import GeoapifyService, GeoapifyGeocoder, GeoapifyPlacesClient
 
 API_KEY = os.environ.get("GEOAPAFY_API_KEY", "")
 print("Geoapify key set:", bool(API_KEY), "| Key:", API_KEY[:8] + "..." if API_KEY else "MISSING")
@@ -41,7 +41,7 @@ for a in attractions[:5]:
     print(f"         {a['address'][:70]}")
 
 print("\n--- TEST 5: Full RealDataService pipeline ---")
-svc  = RealDataService()
+svc  = GeoapifyService()
 data = svc.get_all_data("Goa")
 if data:
     print("SUCCESS!")

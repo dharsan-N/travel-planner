@@ -3,8 +3,8 @@ import logging
 # pyrefly: ignore [missing-import]
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from weather_service import WeatherService
-from itinerary_service import ItineraryService
+from openweather_service import OpenWeatherService
+from grok_service import GrokService
 
 try:
     # pyrefly: ignore [missing-import]
@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__, static_folder="../frontend", static_url_path="")
 CORS(app)
 
-weather_service = WeatherService()
-itinerary_service = ItineraryService()
+openweather_service = OpenWeatherService()
+grok_service = GrokService()
 
 @app.route("/")
 def serve_index():
@@ -79,8 +79,8 @@ def generate_itinerary_endpoint():
             f"Budget: ₹{budget} | Date: '{travel_date}' | Preferences: {preferences}"
         )
 
-        weather_info = weather_service.get_weather(destination)
-        itinerary_info = itinerary_service.generate_itinerary(
+        weather_info = openweather_service.get_weather(destination)
+        itinerary_info = grok_service.generate_itinerary(
             destination, days, budget, interests, preferences,
             num_people=num_people, travel_date=travel_date
         )
