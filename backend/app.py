@@ -1,11 +1,13 @@
 import os
 import logging
+# pyrefly: ignore [missing-import]
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from weather_service import WeatherService
 from itinerary_service import ItineraryService
 
 try:
+    # pyrefly: ignore [missing-import]
     from dotenv import load_dotenv
     load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
     load_dotenv()
@@ -40,6 +42,9 @@ def generate_itinerary_endpoint():
         days = data.get("days")
         budget = data.get("budget")
         interests = data.get("interests", [])
+        preferences = data.get("preferences", "").strip()
+        num_people = data.get("num_people", 1)
+        travel_date = data.get("travel_date", "").strip()  # format "YYYY-MM" or ""
 
         if not destination:
             return jsonify({"error": "Destination is required."}), 400
@@ -58,22 +63,43 @@ def generate_itinerary_endpoint():
         except (TypeError, ValueError):
             return jsonify({"error": "Budget must be a valid positive number."}), 400
 
+        try:
+            num_people = int(num_people)
+            if num_people < 1 or num_people > 20:
+                num_people = max(1, min(20, num_people))
+        except (TypeError, ValueError):
+            num_people = 1
+
         if not isinstance(interests, list):
             return jsonify({"error": "Interests must be a list of strings."}), 400
         interests = [str(item).strip() for item in interests if item]
 
-        logger.info(f"Generating itinerary for: {destination}")
+        logger.info(
+            f"Generating itinerary for: {destination} | People: {num_people} | "
+            f"Budget: ₹{budget} | Date: '{travel_date}' | Preferences: {preferences}"
+        )
 
         weather_info = weather_service.get_weather(destination)
-        itinerary_info = itinerary_service.generate_itinerary(destination, days, budget, interests)
+        itinerary_info = itinerary_service.generate_itinerary(
+            destination, days, budget, interests, preferences,
+            num_people=num_people, travel_date=travel_date
+        )
 
         response_payload = {
             "destination": destination,
+            "num_people": num_people,
+            "travel_date": travel_date,
+            "best_time_to_visit": itinerary_info.get("best_time_to_visit", None),
+            "rainy_warning": itinerary_info.get("rainy_warning", False),
+            "alternate_dates": itinerary_info.get("alternate_dates", ""),
+            "minimum_budget_required": itinerary_info.get("minimum_budget_required", 0),
+            "budget_suitability_note": itinerary_info.get("budget_suitability_note", ""),
             "weather": {
                 "temperature": weather_info.get("temperature", "N/A"),
                 "condition": weather_info.get("condition", "Unknown")
             },
             "realtime_data": itinerary_info.get("realtime_data", {}),
+            "safety_tips": itinerary_info.get("safety_tips", []),
             "itinerary": itinerary_info.get("itinerary", [])
         }
 

@@ -61,3 +61,123 @@ This document outlines the step-by-step process used to implement the real-time 
 
 ## Step 7: Local Validation
 * Cleaned up debug test scripts and launched automated browser simulation runs to verify tab clicks, coordinate resolution, and layout responsiveness.
+
+---
+
+## System Architecture & Data Flow
+
+Below is the detailed architecture and logical execution flow of the travel planner application.
+
+### 1. System Component Architecture
+
+```mermaid
+graph TD
+    classDef client fill:#1e1e2f,stroke:#a78bfa,stroke-width:2px,color:#fff;
+    classDef server fill:#1e293b,stroke:#38bdf8,stroke-width:2px,color:#fff;
+    classDef service fill:#0f172a,stroke:#34d399,stroke-width:2px,color:#fff;
+    classDef database fill:#1e1b4b,stroke:#f43f5e,stroke-width:2px,color:#fff;
+    classDef extAPI fill:#2d1b4e,stroke:#fbbf24,stroke-width:2px,color:#fff;
+
+    subgraph Client ["Client Browser (Frontend)"]
+        UI["index.html (UI Form & Spotlights Panel)"]:::client
+        JS["script.js (State, API requests, Render UI)"]:::client
+        CSS["style.css (Dark Glassmorphism & Print)"]:::client
+        UI <--> JS
+        JS <--> CSS
+    end
+
+    subgraph Backend ["Flask App Server (app.py)"]
+        API["POST /generate-itinerary Endpoint"]:::server
+        WS["WeatherService (weather_service.py)"]:::service
+        RS["RealtimeService (realtime_service.py)"]:::service
+        IS["ItineraryService (itinerary_service.py)"]:::service
+        GPS["GooglePlacesService (realtime_service.py)"]:::service
+    end
+
+    subgraph ExternalAPIs ["External API Services"]
+        OWM["OpenWeatherMap API"]:::extAPI
+        OSM["OSM Nominatim API"]:::extAPI
+        GGM["Google Places API (Optional)"]:::extAPI
+        GrokAPI["Grok / xAI Chat Completion API"]:::extAPI
+    end
+
+    subgraph LocalDB ["Metadata Databases & Fallbacks"]
+        RDB["Rainy/Monsoon DB"]:::database
+        HDB["Hotel Price DB"]:::database
+        TDB["Transport Mode DB"]:::database
+        EDB["Entry Fee DB"]:::database
+        WDB["Day Weather DB"]:::database
+        MockGen["Mock Itinerary Generator"]:::service
+    end
+
+    %% Communications
+    JS -- "AJAX JSON request / response" --> API
+    API --> WS
+    API --> IS
+
+    WS -- "Get current weather" --> OWM
+    
+    IS --> RS
+    RS -- "1. Geocode Destination (BBox)" --> OSM
+    RS -- "2. Viewbox Search (Stays/Food/Attractions)" --> OSM
+    RS --> GPS
+    GPS -- "Fetch ratings (If key present)" --> GGM
+
+    IS -- "Monsoon check & pricing metrics" --> RDB & HDB & TDB & EDB & WDB
+    IS -- "Send context prompt (If key present)" --> GrokAPI
+    IS -- "Fallback (If key missing)" --> MockGen
+    MockGen -- "Assemble realistic itinerary" --> RDB & HDB & TDB & EDB & WDB
+```
+
+### 2. Implementation Execution Flow
+
+```mermaid
+flowchart TD
+    classDef startEnd fill:#111827,stroke:#6b7280,stroke-width:2px,color:#fff;
+    classDef process fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#fff;
+    classDef decision fill:#312e81,stroke:#818cf8,stroke-width:2px,color:#fff;
+    classDef error fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#fff;
+
+    Start(["User submits search form"]):::startEnd --> Val{"Input valid?"}:::decision
+    Val -- "No (invalid values)" --> Err["Return HTTP 400 Validation Error"]:::error
+    Val -- "Yes" --> Req["POST payload sent to Flask /generate-itinerary"]:::process
+
+    Req --> WeatherReq["Fetch Destination Weather"]:::process
+    WeatherReq --> HasWKey{"OpenWeatherMap Key?"}:::decision
+    HasWKey -- "Yes" --> FetchOWM["Query OpenWeatherMap API"]:::process
+    HasWKey -- "No / Fails" --> MockW["Generate deterministic Mock weather"]:::process
+
+    FetchOWM --> RealtimeReq["Fetch Real-Time Spotlight Data"]:::process
+    MockW --> RealtimeReq
+
+    RealtimeReq --> ResolveLoc["Geolocate boundingbox via OSM Nominatim"]:::process
+    ResolveLoc --> QueryOSM["Run viewbox query for: Hotels, Restaurants, Attractions"]:::process
+    QueryOSM --> EnrichListings["Enrich listings with reviews, maps links & food dishes"]:::process
+
+    EnrichListings --> HasGKey{"Google Places Key?"}:::decision
+    HasGKey -- "Yes" --> QueryGPlaces["Query ratings & reviews from Google"]:::process
+    HasGKey -- "No / Fails" --> HashRating["Generate OSM hash-based rating"]:::process
+
+    QueryGPlaces --> ItinGen["Execute Itinerary Logic"]:::process
+    HashRating --> ItinGen
+
+    ItinGen --> CheckRain["Check travel date vs RAINY_MONSOON_DB"]:::process
+    CheckRain --> GetTiers["Compute Pricing Tiers (Hotel, Food, Transport, Entry Fees)"]:::process
+
+    GetTiers --> HasLlmKey{"Grok/xAI Key set?"}:::decision
+    HasLlmKey -- "Yes" --> CallGrok["Send context prompt to xAI API (JSON Mode)"]:::process
+    HasLlmKey -- "No / Fails" --> FallbackMock["Call _generate_mock_itinerary fallback"]:::process
+
+    CallGrok --> RespOrFallback{"API response ok?"}:::decision
+    RespOrFallback -- "Yes" --> ParseJson["Parse itinerary JSON"]:::process
+    RespOrFallback -- "No" --> FallbackMock
+
+    FallbackMock --> ComputeSplit["Calculate exact day accommodation, food, activities & transport splits"]:::process
+    ComputeSplit --> AssembleJson["Generate complete structured mock itinerary JSON"]:::process
+
+    ParseJson --> APIResponse["Respond with unified JSON payload to Client"]:::process
+    AssembleJson --> APIResponse
+
+    APIResponse --> RenderUI["JS renders UI: Spotlight tabs, Daily cards, Weather & Safety tips"]:::process
+    RenderUI --> End(["Interactive Planner page rendered"]):::startEnd
+```
