@@ -468,11 +468,38 @@ input[type="number"]:focus {
 
 /* Banner section with Location & Weather */
 .results-header-banner {
+    position: relative;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     gap: 20px;
     margin-bottom: 24px;
     border-bottom: 2px solid var(--card-border);
+    z-index: 1;
+}
+
+.banner-bg-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.28;
+    transition: var(--transition-smooth);
+}
+
+.results-header-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(11, 15, 25, 0.4) 0%, rgba(11, 15, 25, 0.75) 100%);
+    z-index: -1;
 }
 
 .header-banner-details {
@@ -803,19 +830,106 @@ input[type="number"]:focus {
 #spotlight-list-restaurants .spotlight-item-icon i { color: #f43f5e; }
 #spotlight-list-attractions .spotlight-item-icon i { color: #10b981; }
 
+.spotlight-rank {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--secondary-light);
+    width: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.spotlight-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+}
+
+.spotlight-rating {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--secondary-light);
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    padding: 2px 8px;
+    border-radius: 50px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.spotlight-rating i {
+    font-size: 0.75rem;
+    color: #f59e0b;
+}
+
+.spotlight-rating .review-count {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.spotlight-recommendation {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--primary-light);
+    background: rgba(99, 102, 241, 0.05);
+    border-left: 2px solid var(--primary);
+    padding: 6px 10px;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin: 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.3;
+}
+
+.spotlight-recommendation i {
+    font-size: 0.8rem;
+}
+
+.spotlight-maps-link {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--secondary-light);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    transition: var(--transition-snappy);
+    width: fit-content;
+}
+
+.spotlight-maps-link:hover {
+    color: var(--text-primary);
+    text-decoration: underline;
+}
+
+.spotlight-maps-link i {
+    font-size: 0.8rem;
+}
+
 .spotlight-item-details {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    flex: 1;
 }
 
 .spotlight-item-details h4 {
     font-size: 0.95rem;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-primary);
 }
 
-.spotlight-item-details p {
+.spotlight-address {
     font-size: 0.8rem;
     color: var(--text-secondary);
     line-height: 1.3;
@@ -904,6 +1018,133 @@ footer {
         gap: 10px;
     }
 }
+
+/* Textarea styling */
+.form-textarea {
+    width: 100%;
+    background: rgba(10, 12, 22, 0.6);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    outline: none;
+    transition: var(--transition-snappy);
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-textarea:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px var(--glow-primary);
+    background: rgba(10, 12, 22, 0.8);
+}
+
+/* Safety Alerts Card */
+.safety-alerts-card {
+    background: rgba(239, 68, 68, 0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.05);
+}
+
+.safety-alerts-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.safety-icon {
+    font-size: 1.6rem;
+    color: #f87171;
+    filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.3));
+}
+
+.safety-alerts-header h3 {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fca5a5;
+}
+
+.safety-alerts-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.safety-alerts-list li {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.4;
+}
+
+.safety-alerts-list li i {
+    color: #f87171;
+    font-size: 0.8rem;
+    margin-top: 4px;
+    flex-shrink: 0;
+}
+
+/* Day Cost Breakdown */
+.day-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.day-card-header > div {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+}
+
+.day-cost-breakdown {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    padding-top: 4px;
+}
+
+.breakdown-pill {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 50px;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition-snappy);
+}
+
+.breakdown-pill:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-primary);
+}
+
+.breakdown-pill i {
+    font-size: 0.7rem;
+}
+
+.breakdown-pill[title="Stay"] i { color: #c084fc; }
+.breakdown-pill[title="Food"] i { color: #f43f5e; }
+.breakdown-pill[title="Activities"] i { color: #10b981; }
+.breakdown-pill[title="Transport"] i { color: #38bdf8; }
 
 /* ==========================================
    Print Style Settings (Optimized for PDF)
@@ -1016,4 +1257,681 @@ footer {
         border-color: #d1d5db !important;
         background: #f3f4f6 !important;
     }
+
+    /* Print styling for warnings and cost pills */
+    .safety-alerts-card {
+        background: #fef2f2 !important;
+        border: 1px solid #fee2e2 !important;
+        color: #991b1b !important;
+        box-shadow: none !important;
+        margin-bottom: 20px !important;
+        page-break-inside: avoid;
+    }
+    
+    .safety-alerts-header h3 {
+        color: #991b1b !important;
+    }
+    
+    .safety-alerts-list li {
+        color: #1f2937 !important;
+    }
+    
+    .breakdown-pill {
+        border-color: #e5e7eb !important;
+        background: #f9fafb !important;
+        color: #374151 !important;
+    }
+    
+    .breakdown-pill i {
+        color: #4b5563 !important;
+    }
+
+    /* Hide maps links in PDF print output */
+    .spotlight-maps-link {
+        display: none !important;
+    }
+    
+    .spotlight-rating {
+        background: #f3f4f6 !important;
+        border-color: #d1d5db !important;
+        color: #1f2937 !important;
+    }
+    
+    .spotlight-recommendation {
+        background: #f9fafb !important;
+        border-left-color: #4f46e5 !important;
+        color: #4f46e5 !important;
+    }
 }
+
+/* ==========================================
+   NEW FEATURE STYLES — Groups, Dates, Ratings
+   ========================================== */
+
+/* Month input styling */
+input[type="month"] {
+    width: 100%;
+    background: rgba(10, 12, 22, 0.6);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    padding: 14px 42px 14px 16px;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    outline: none;
+    transition: var(--transition-snappy);
+    color-scheme: dark;
+}
+
+input[type="month"]:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px var(--glow-primary);
+    background: rgba(10, 12, 22, 0.8);
+}
+
+/* Optional label tag */
+.label-optional {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-left: 4px;
+}
+
+/* Hint text below fields */
+.field-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.field-hint i {
+    color: var(--secondary);
+    font-size: 0.75rem;
+    margin-right: 0;
+}
+
+/* Live per-person budget preview bar */
+.budget-preview-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(99, 102, 241, 0.07);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary-light);
+    transition: var(--transition-smooth);
+}
+
+.budget-preview-bar i {
+    color: var(--primary-light);
+    font-size: 1rem;
+}
+
+/* Accent colour for per-person budget figure in results */
+.budget-item .accent {
+    color: #34d399;
+}
+
+/* Per-person breakdown pill on day cards */
+.per-person-pill {
+    background: rgba(52, 211, 153, 0.08) !important;
+    border-color: rgba(52, 211, 153, 0.25) !important;
+    color: #34d399 !important;
+    font-weight: 700 !important;
+}
+
+.per-person-pill i {
+    color: #34d399 !important;
+    font-size: 0.7rem;
+}
+
+/* ── Best Time to Visit callout ────────────────────────── */
+.best-time-card {
+    background: rgba(245, 158, 11, 0.07);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.best-time-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.best-time-icon {
+    font-size: 1.6rem;
+    color: var(--secondary);
+    filter: drop-shadow(0 0 8px var(--glow-secondary));
+    flex-shrink: 0;
+}
+
+.best-time-header h3 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--secondary-light);
+}
+
+.best-time-subtitle {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.best-time-text {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+    padding-left: 2px;
+}
+
+/* ── Rating source badges ──────────────────────────────── */
+.rating-source-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 0.6rem;
+    margin-left: 3px;
+    flex-shrink: 0;
+}
+
+.google-badge {
+    background: rgba(66, 133, 244, 0.15);
+    border: 1px solid rgba(66, 133, 244, 0.35);
+    color: #60a5fa;
+}
+
+.osm-badge {
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    color: var(--primary-light);
+}
+
+.geoapify-badge {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+.groq-badge {
+    background: rgba(167, 139, 250, 0.15);
+    border: 1px solid rgba(167, 139, 250, 0.35);
+    color: #a78bfa;
+}
+
+/* Safety subtitle */
+.safety-subtitle {
+    font-size: 0.8rem;
+    color: rgba(252, 165, 165, 0.6);
+    margin-top: 2px;
+}
+
+/* ── Print / PDF additions ─────────────────────────────── */
+@media print {
+    .best-time-card {
+        background: #fffbeb !important;
+        border: 1px solid #fde68a !important;
+        color: #92400e !important;
+        margin-bottom: 20px !important;
+        page-break-inside: avoid;
+    }
+
+    .best-time-header h3 { color: #b45309 !important; }
+    .best-time-text      { color: #1f2937 !important; }
+
+    .per-person-pill {
+        background: #ecfdf5 !important;
+        border-color: #6ee7b7 !important;
+        color: #065f46 !important;
+    }
+
+    .budget-preview-bar { display: none !important; }
+
+    .rainy-warning-banner {
+        background: #fffbeb !important;
+        border: 2px solid #f59e0b !important;
+        color: #78350f !important;
+    }
+    .rainy-banner-title, .rainy-banner-body { color: #78350f !important; }
+    .rainy-alt-value { color: #b45309 !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   NEW COMPONENTS — Enhanced Day-by-Day Details
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Rainy Month Warning Banner ─────────────────────────────────── */
+.rainy-warning-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 22px 28px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg,
+        rgba(180, 83, 9, 0.18) 0%,
+        rgba(245, 158, 11, 0.12) 50%,
+        rgba(180, 83, 9, 0.08) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    box-shadow:
+        0 4px 24px rgba(180, 83, 9, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    margin-bottom: 20px;
+    animation: rainyPulse 3s ease-in-out infinite;
+    flex-wrap: wrap;
+}
+
+@keyframes rainyPulse {
+    0%, 100% { box-shadow: 0 4px 24px rgba(180, 83, 9, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05); }
+    50%       { box-shadow: 0 4px 30px rgba(245, 158, 11, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.05); }
+}
+
+.rainy-banner-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    flex: 1;
+    min-width: 200px;
+}
+
+.rainy-banner-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    animation: rainIconBounce 2.5s ease-in-out infinite;
+}
+
+@keyframes rainIconBounce {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-4px); }
+}
+
+.rainy-banner-icon {
+    font-size: 1.5rem;
+    color: #f59e0b;
+    filter: drop-shadow(0 2px 6px rgba(245, 158, 11, 0.4));
+}
+
+.rainy-banner-text h3 {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #fbbf24;
+    margin-bottom: 6px;
+}
+
+.rainy-banner-text p {
+    font-size: 0.88rem;
+    color: rgba(253, 230, 138, 0.85);
+    line-height: 1.5;
+}
+
+.rainy-banner-right {
+    flex-shrink: 0;
+}
+
+.rainy-alt-dates-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: var(--radius-sm);
+    padding: 12px 18px;
+    min-width: 200px;
+}
+
+.rainy-alt-icon {
+    font-size: 1.3rem;
+    color: #f59e0b;
+}
+
+.rainy-alt-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(245, 158, 11, 0.7);
+    margin-bottom: 3px;
+}
+
+.rainy-alt-value {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fbbf24;
+}
+
+/* ── Day Card Header Layout Upgrades ────────────────────────────── */
+.day-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-bottom: 1px solid var(--card-border);
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+}
+
+.day-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.day-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ── Day Weather Pill ────────────────────────────────────────────── */
+.day-weather-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: 50px;
+    background: rgba(56, 189, 248, 0.08);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #7dd3fc;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.day-weather-pill i {
+    color: #38bdf8;
+    font-size: 0.9rem;
+}
+
+/* ── Hotel Price Badge ───────────────────────────────────────────── */
+.hotel-price-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 5px;
+    padding: 3px 10px;
+    border-radius: 50px;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #6ee7b7;
+}
+
+.hotel-price-badge i {
+    font-size: 0.7rem;
+    color: #34d399;
+}
+
+/* ── Transport Activity Row ──────────────────────────────────────── */
+.activity-transport .activity-icon-box {
+    background: rgba(251, 191, 36, 0.06);
+    border-color: rgba(251, 191, 36, 0.15);
+}
+.activity-transport .activity-icon-box i {
+    color: #fbbf24;
+}
+.activity-transport .desc {
+    font-size: 0.88rem;
+    color: rgba(253, 230, 138, 0.85);
+    line-height: 1.5;
+}
+
+/* ── Entry Fees Activity Row ─────────────────────────────────────── */
+.activity-entry-fees .activity-icon-box {
+    background: rgba(192, 132, 252, 0.06);
+    border-color: rgba(192, 132, 252, 0.15);
+}
+.activity-entry-fees .activity-icon-box i {
+    color: #c084fc;
+}
+
+.entry-fees-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.entry-fees-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.87rem;
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
+    padding: 5px 10px;
+}
+
+.entry-fee-icon {
+    color: #a78bfa;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+}
+
+.entry-fee-place {
+    flex: 1;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.entry-fee-amount {
+    font-weight: 700;
+    color: #10b981;
+    white-space: nowrap;
+    font-size: 0.83rem;
+}
+
+/* ── Responsive adjustments for new elements ─────────────────────── */
+@media (max-width: 640px) {
+    .rainy-warning-banner {
+        flex-direction: column;
+        padding: 18px 20px;
+    }
+    .rainy-alt-dates-box {
+        min-width: unset;
+        width: 100%;
+    }
+    .day-header-top {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .day-weather-pill {
+        font-size: 0.76rem;
+        white-space: normal;
+    }
+    .entry-fees-list li {
+        flex-wrap: wrap;
+    }
+    .entry-fee-amount {
+        width: 100%;
+        padding-left: 26px;
+    }
+}
+
+/* ── Day Narration Guide Box ─────────────────────────────────────── */
+.day-narration-box {
+    background: rgba(99, 102, 241, 0.04);
+    border-left: 3px solid var(--secondary);
+    padding: 14px 18px;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    margin-bottom: 18px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    border-top: 1px solid rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    border-right: 1px solid rgba(255, 255, 255, 0.02);
+}
+.narration-icon {
+    color: var(--secondary-light);
+    font-size: 1.1rem;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+.narration-text {
+    font-style: italic;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--text-primary);
+}
+
+/* Print styling for PDF */
+@media print {
+    .day-narration-box {
+        background: #fffbeb !important;
+        border-left: 3px solid #b45309 !important;
+        border-color: #fde68a !important;
+        color: #92400e !important;
+        page-break-inside: avoid;
+    }
+    .narration-icon {
+        color: #b45309 !important;
+    }
+    .narration-text {
+        color: #1f2937 !important;
+    }
+}
+
+/* ── Budget Warning Banner ─────────────────────────────────── */
+.budget-warning-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 22px 28px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg,
+        rgba(239, 68, 68, 0.15) 0%,
+        rgba(245, 158, 11, 0.1) 50%,
+        rgba(239, 68, 68, 0.08) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    box-shadow: 0 4px 24px rgba(239, 68, 68, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.budget-banner-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    flex: 1;
+    min-width: 200px;
+}
+
+.budget-banner-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.budget-banner-icon {
+    font-size: 1.5rem;
+    color: #f87171;
+    filter: drop-shadow(0 2px 6px rgba(239, 68, 68, 0.4));
+}
+
+.budget-banner-text h3 {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #fca5a5;
+    margin-bottom: 6px;
+}
+
+.budget-banner-text p {
+    font-size: 0.88rem;
+    color: rgba(252, 165, 165, 0.85);
+    line-height: 1.5;
+}
+
+.budget-banner-right {
+    flex-shrink: 0;
+}
+
+.budget-alt-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: var(--radius-sm);
+    padding: 12px 18px;
+    min-width: 200px;
+}
+
+.budget-alt-icon {
+    font-size: 1.3rem;
+    color: #f87171;
+}
+
+.budget-alt-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.budget-recommended-value {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #f87171;
+}
+
+@media print {
+    .budget-warning-banner {
+        background: #fff5f5 !important;
+        border: 2px solid #fee2e2 !important;
+        color: #991b1b !important;
+        margin-bottom: 20px !important;
+        page-break-inside: avoid;
+    }
+    .budget-banner-title, .budget-banner-body {
+        color: #991b1b !important;
+    }
+    .budget-recommended-value {
+        color: #991b1b !important;
+    }
+}
+
+
+

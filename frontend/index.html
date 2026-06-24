@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RoamAI - Intelligent AI Travel Planner</title>
+    <meta name="description" content="RoamAI is an AI-powered travel planner that generates personalised day-by-day itineraries with real-time weather, local ratings, group budgets, and best-time recommendations.">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -62,15 +63,45 @@
                             </div>
                         </div>
 
+                        <!-- Number of Travellers -->
+                        <div class="form-group col">
+                            <label for="num_people">
+                                <i class="fa-solid fa-users"></i> Number of Travellers
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="number" id="num_people" name="num_people" min="1" max="20" value="2" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
                         <!-- Budget Input -->
                         <div class="form-group col">
                             <label for="budget">
-                                <i class="fa-solid fa-indian-rupee-sign"></i> Total Budget (INR)
+                                <i class="fa-solid fa-indian-rupee-sign"></i> Total Group Budget (INR)
                             </label>
                             <div class="input-wrapper">
-                                <input type="number" id="budget" name="budget" min="1000" placeholder="e.g. 25000" value="25000" required>
+                                <input type="number" id="budget" name="budget" min="1000" placeholder="e.g. 50000" value="50000" required>
                             </div>
                         </div>
+
+                        <!-- Travel Date (month picker) -->
+                        <div class="form-group col">
+                            <label for="travel_date">
+                                <i class="fa-solid fa-plane-departure"></i> Travel Month <span class="label-optional">(optional)</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="month" id="travel_date" name="travel_date">
+                                <i class="fa-solid fa-calendar-star input-decor"></i>
+                            </div>
+                            <p class="field-hint"><i class="fa-solid fa-lightbulb"></i> Leave blank and we'll recommend the best time to visit!</p>
+                        </div>
+                    </div>
+
+                    <!-- Per-person budget live preview -->
+                    <div id="budget-preview" class="budget-preview-bar">
+                        <i class="fa-solid fa-person"></i>
+                        <span id="budget-preview-text">₹25,000 per person</span>
                     </div>
 
                     <!-- Interests Selection (Multi-select Checkbox pills) -->
@@ -128,6 +159,16 @@
                         </div>
                     </div>
 
+                    <!-- Custom Preferences Input -->
+                    <div class="form-group">
+                        <label for="preferences">
+                            <i class="fa-solid fa-comment-medical"></i> Custom Requests, Likes &amp; Dislikes (Things to Avoid)
+                        </label>
+                        <div class="input-wrapper">
+                            <textarea id="preferences" name="preferences" placeholder="e.g. Avoid crowded tourist traps, recommend seafood, warn me about local taxi scams." rows="3" class="form-textarea"></textarea>
+                        </div>
+                    </div>
+
                     <button type="submit" id="generate-btn" class="btn primary-btn">
                         <span>Generate Itinerary</span>
                         <i class="fa-solid fa-wand-magic-sparkles"></i>
@@ -149,7 +190,7 @@
 
             <!-- Results Section -->
             <section id="results-section" class="hidden fade-in">
-                <!-- Action Controls (Above PDF to prevent layout break) -->
+                <!-- Action Controls -->
                 <div class="results-controls">
                     <button onclick="regenerateItinerary()" class="btn secondary-btn">
                         <i class="fa-solid fa-rotate"></i> Regenerate Itinerary
@@ -162,10 +203,11 @@
                     </button>
                 </div>
 
-                <!-- Exportable Area (This container is targeted by html2pdf) -->
+                <!-- Exportable Area -->
                 <div id="pdf-export-area" class="pdf-container">
                     <!-- Dest & Weather Banner -->
                     <div class="results-header-banner glass-card">
+                        <div id="banner-bg-image" class="banner-bg-overlay"></div>
                         <div class="header-banner-details">
                             <div class="banner-title-group">
                                 <i class="fa-solid fa-route banner-icon"></i>
@@ -186,17 +228,104 @@
                             </div>
                         </div>
 
-                        <!-- Budget Overview Bar -->
+                        <!-- Budget & Group Overview Bar -->
                         <div class="budget-badge-container">
                             <div class="budget-item">
-                                <span class="label">Trip Budget</span>
-                                <span class="val" id="result-total-budget">₹25,000</span>
+                                <span class="label">Group Budget</span>
+                                <span class="val" id="result-total-budget">₹50,000</span>
                             </div>
                             <div class="budget-item">
                                 <span class="label">Est. Expenses</span>
-                                <span class="val highlight" id="result-estimated-budget">₹18,500</span>
+                                <span class="val highlight" id="result-estimated-budget">₹38,500</span>
+                            </div>
+                            <div class="budget-item">
+                                <span class="label">Min. Recommended</span>
+                                <span class="val" id="result-min-recommended-budget">₹30,000</span>
+                            </div>
+                            <div class="budget-item">
+                                <span class="label">Per Person</span>
+                                <span class="val accent" id="result-per-person">₹19,250</span>
+                            </div>
+                            <div class="budget-item">
+                                <span class="label">Travellers</span>
+                                <span class="val" id="result-travellers"><i class="fa-solid fa-users"></i> 2</span>
+                            </div>
+                            <div class="budget-item" id="result-travel-date-item" style="display:none">
+                                <span class="label">Travel Month</span>
+                                <span class="val" id="result-travel-date">—</span>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Best Time to Visit Callout (shown when no date given) -->
+                    <div id="best-time-card" class="best-time-card hidden">
+                        <div class="best-time-header">
+                            <i class="fa-solid fa-calendar-check best-time-icon"></i>
+                            <div>
+                                <h3>Best Time to Visit</h3>
+                                <p class="best-time-subtitle">No travel date specified — here's our AI recommendation</p>
+                            </div>
+                        </div>
+                        <p id="best-time-text" class="best-time-text"></p>
+                    </div>
+
+                    <!-- Budget Warning Banner (shown when user budget is less than recommended minimum budget) -->
+                    <div id="budget-warning-banner" class="budget-warning-banner hidden">
+                        <div class="budget-banner-left">
+                            <div class="budget-banner-icon-wrap">
+                                <i class="fa-solid fa-circle-exclamation budget-banner-icon"></i>
+                            </div>
+                            <div class="budget-banner-text">
+                                <h3 id="budget-banner-title">Low Budget Warning</h3>
+                                <p id="budget-banner-body">Your budget is below the recommended minimum budget for this destination and duration. We have designed an ultra-saver plan, but some prices may be unrealistic or require extreme cost-cutting.</p>
+                            </div>
+                        </div>
+                        <div class="budget-banner-right">
+                            <div class="budget-alt-box">
+                                <i class="fa-solid fa-hand-holding-dollar budget-alt-icon"></i>
+                                <div>
+                                    <span class="budget-alt-label">Recommended Minimum</span>
+                                    <span id="budget-recommended-val" class="budget-recommended-value">₹30,000</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rainy Month Warning Banner (shown when travel month falls in monsoon) -->
+                    <div id="rainy-warning-banner" class="rainy-warning-banner hidden">
+                        <div class="rainy-banner-left">
+                            <div class="rainy-banner-icon-wrap">
+                                <i class="fa-solid fa-cloud-showers-heavy rainy-banner-icon"></i>
+                            </div>
+                            <div class="rainy-banner-text">
+                                <h3 id="rainy-banner-title">Heads up — Monsoon Season!</h3>
+                                <p id="rainy-banner-body">Your selected travel month typically falls in the rainy/monsoon season for this destination. Expect heavy rains, restricted outdoor activities, and possible flooding.</p>
+                            </div>
+                        </div>
+                        <div class="rainy-banner-right">
+                            <div class="rainy-alt-dates-box">
+                                <i class="fa-solid fa-calendar-star rainy-alt-icon"></i>
+                                <div>
+                                    <span class="rainy-alt-label">We Recommend Visiting In</span>
+                                    <span id="rainy-alt-dates" class="rainy-alt-value">November to February</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Safety & Warnings Alerts -->
+                    <div id="safety-alerts-card" class="safety-alerts-card hidden">
+                        <div class="safety-alerts-header">
+                            <i class="fa-solid fa-triangle-exclamation safety-icon"></i>
+                            <div>
+                                <h3>Local Safety Warnings &amp; Scams to Avoid</h3>
+                                <p class="safety-subtitle">Alerts and advice resolved for this location</p>
+                            </div>
+                        </div>
+                        <ul id="safety-alerts-list" class="safety-alerts-list">
+                            <!-- Warnings dynamically injected here -->
+                        </ul>
                     </div>
 
                     <!-- Real-Time Local Spotlights -->
@@ -242,10 +371,10 @@
 
         <!-- Footer -->
         <footer>
-            <p>&copy; 2026 RoamAI. Powered by Flask, OpenWeatherMap & Grok API.</p>
+            <p>&copy; 2026 RoamAI. Powered by Flask, OpenWeatherMap &amp; Grok API.</p>
         </footer>
     </div>
-    
+
     <script src="script.js"></script>
 </body>
 </html>
