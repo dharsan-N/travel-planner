@@ -120,7 +120,7 @@ Requirements:
 10. alternate_dates: If rainy_warning is true, suggest the best alternative dry months.
 11. best_time_to_visit: Recommend the best travel window if no date was specified.
 12. spotlights: Estimate the actual real-world user rating (float, 1.0 to 5.0) and review count (integer) for each of the Top Hotels, Top Restaurants, and Top Sights listed above based on your knowledge base. Return these in the spotlights key schema.
-13. minimum_budget_required: Calculate a realistic minimum total group budget (integer, in INR) needed to travel to {destination} for {days} days with {num_people} people (covering modest accommodation, food, local travel, and basic attractions).
+13. minimum_budget_required: Calculate a realistic minimum total group budget (integer, in INR) needed to travel to {destination} for {days} days with {num_people} people. If the user budget is very low (e.g. under ₹5000, like ₹1000), make this recommended minimum budget extremely budget-friendly (around ₹300 to ₹500 per person per day using public transit, free sights, and hostel beds) so it does not display false warning messages and shows a highly economical trip is possible.
 14. budget_suitability_note: Write a brief (1-2 sentences) note explaining if the user's budget of ₹{budget} is sufficient or tight for this trip and any cost-saving suggestions.
 
 Return ONLY clean JSON matching this schema exactly:
@@ -250,6 +250,11 @@ Return ONLY clean JSON matching this schema exactly:
                 except (ValueError, TypeError):
                     min_budget_req = 0
 
+                # Safeguard: cap/adjust minimum budget dynamically to prevent false warnings for tight but viable low-budget trips
+                economical_min = days * num_people * 500
+                if budget >= economical_min and min_budget_req > budget:
+                    min_budget_req = economical_min
+
                 itinerary_list = parsed_data.get("itinerary", [])
                 self._adjust_costs_to_budget(itinerary_list, budget, num_people)
 
@@ -326,7 +331,8 @@ Return ONLY clean JSON matching this schema exactly:
                 "estimated_cost": f"₹{total_daily}"
             })
 
-        min_budget = days * num_people * 2000
+        # Base minimum budget calculation on ₹400 per person per day for economical trips
+        min_budget = min(budget, days * num_people * 600) if budget >= days * num_people * 400 else days * num_people * 400
 
         return {
             "itinerary": itinerary_list,
@@ -339,7 +345,7 @@ Return ONLY clean JSON matching this schema exactly:
             "rainy_warning": False,
             "alternate_dates": "",
             "minimum_budget_required": min_budget,
-            "budget_suitability_note": f"Estimated minimum budget is ₹{min_budget} (assuming basic daily expenses of ₹2,000/person)."
+            "budget_suitability_note": f"Estimated minimum budget is ₹{min_budget} (assuming basic daily expenses of ₹400/person)."
         }
 
     def _adjust_costs_to_budget(self, itinerary: list, total_budget: int, num_people: int):

@@ -1,4 +1,56 @@
 let currentInputs = null;
+let itineraryData = null;  // Keep the itinerary payload in memory
+
+// TripAdvisor-like high-quality rotating travel image arrays
+const HOTEL_IMGS = [
+    "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=300&h=200&q=80",
+    "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=300&h=200&q=80",
+    "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=300&h=200&q=80",
+    "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=300&h=200&q=80",
+    "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=300&h=200&q=80"
+];
+const RESTAURANT_IMGS = [
+    "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=300&h=200&q=80",
+    "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=300&h=200&q=80",
+    "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=300&h=200&q=80",
+    "https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=300&h=200&q=80",
+    "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=300&h=200&q=80"
+];
+const ATTRACTION_IMGS = [
+    "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=300&h=200&q=80",
+    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=300&h=200&q=80",
+    "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=300&h=200&q=80",
+    "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=300&h=200&q=80",
+    "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=300&h=200&q=80"
+];
+
+// Helper to resolve localized currency symbols
+function getCurrencySymbol(country) {
+    if (!country) return '₹';
+    const c = country.toLowerCase();
+    if (c.includes('india') || c.includes('in')) return '₹';
+    if (c.includes('europe') || c.includes('france') || c.includes('germany') || c.includes('italy') || c.includes('spain') || c.includes('austria') || c.includes('netherlands')) return '€';
+    if (c.includes('united kingdom') || c.includes('uk') || c.includes('london')) return '£';
+    if (c.includes('japan') || c.includes('jp')) return '¥';
+    if (c.includes('united states') || c.includes('us') || c.includes('america') || c.includes('canada') || c.includes('australia') || c.includes('singapore')) return '$';
+    return '₹';
+}
+
+// Flow state transitions
+function showLanding() {
+    document.getElementById('landing-section').classList.remove('hidden');
+    document.getElementById('form-section').classList.add('hidden');
+    document.getElementById('results-section').classList.add('hidden');
+    document.getElementById('loader-section').classList.add('hidden');
+}
+
+function showInputForm() {
+    document.getElementById('landing-section').classList.add('hidden');
+    document.getElementById('form-section').classList.remove('hidden');
+    document.getElementById('results-section').classList.add('hidden');
+    document.getElementById('loader-section').classList.add('hidden');
+    document.getElementById('form-section').scrollIntoView({ behavior: 'smooth' });
+}
 
 const getApiUrl = () => {
     if (window.location.origin && window.location.origin.startsWith('http')) {
@@ -24,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (budgetInput)    budgetInput.addEventListener('input',    updateBudgetPreview);
     if (numPeopleInput) numPeopleInput.addEventListener('input', updateBudgetPreview);
     updateBudgetPreview();
+    showLanding(); // Boot into introduction screen
 });
 
 // ── Form submit ──────────────────────────────────────────────────────────────
@@ -139,9 +192,69 @@ async function fetchDestinationImage(destination) {
     }
 }
 
+// ── Fetch destination gallery images from Wikipedia ───────────────────────
+async function fetchDestinationGallery(destination) {
+    const galleryEl = document.getElementById('destination-gallery');
+    if (!galleryEl) return;
+    galleryEl.innerHTML = '';
+    galleryEl.classList.add('hidden');
+
+    try {
+        const cleanDest = destination.trim().split(',')[0];
+        // Query Wikipedia search for related pages to get multiple pageimages
+        const url = `https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=thumbnail&pithumbsize=600&pilimit=4&generator=search&gsrsearch=${encodeURIComponent(cleanDest)}&gsrlimit=4&origin=*`;
+        
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("API call failed");
+
+        const data = await response.json();
+        const pages = data.query?.pages;
+        if (!pages) throw new Error("No pages found");
+
+        const imgs = [];
+        for (const id in pages) {
+            const src = pages[id]?.thumbnail?.source;
+            if (src) imgs.push(src);
+        }
+
+        if (imgs.length >= 2) {
+            galleryEl.innerHTML = imgs.slice(0, 3).map(src => `
+                <img src="${src}" class="destination-gallery-img" alt="${destination}">
+            `).join('');
+            galleryEl.classList.remove('hidden');
+        } else {
+            // Fallback gallery images if wikipedia search fails
+            const fallbacks = [
+                "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=600&h=400&q=80",
+                "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&h=400&q=80",
+                "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&h=400&q=80"
+            ];
+            galleryEl.innerHTML = fallbacks.map(src => `
+                <img src="${src}" class="destination-gallery-img" alt="Travel Spot">
+            `).join('');
+            galleryEl.classList.remove('hidden');
+        }
+    } catch (err) {
+        console.error("Failed to load gallery:", err);
+        // Fallback gallery images if search fails completely
+        const fallbacks = [
+            "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=600&h=400&q=80",
+            "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&h=400&q=80",
+            "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&h=400&q=80"
+        ];
+        galleryEl.innerHTML = fallbacks.map(src => `
+            <img src="${src}" class="destination-gallery-img" alt="Travel Spot">
+        `).join('');
+        galleryEl.classList.remove('hidden');
+    }
+}
+
 // ── Render results ───────────────────────────────────────────────────────────
 function renderResults(data, userBudget, numPeople) {
     numPeople = numPeople || data.num_people || 1;
+    
+    // Store itinerary data in memory
+    itineraryData = data;
 
     document.getElementById('result-destination-title').textContent = data.destination;
     fetchDestinationImage(data.destination);
@@ -301,23 +414,53 @@ function renderResults(data, userBudget, numPeople) {
                 return;
             }
             items.forEach((item, idx) => {
+                const nameHash = Array.from(item.name).reduce((sum, char) => sum + char.charCodeAt(0), 0);
+                const currency = getCurrencySymbol(data.country);
+                const tiers = ['', `${currency}`, `${currency}${currency}`, `${currency}${currency} - ${currency}${currency}${currency}`];
+                const priceIndicator = tiers[1 + (nameHash % 3)];
+
+                let imageList = [];
+                let typeKey = '';
+                if (iconClass.includes('hotel')) {
+                    imageList = HOTEL_IMGS;
+                    typeKey = 'hotel';
+                } else if (iconClass.includes('utensils')) {
+                    imageList = RESTAURANT_IMGS;
+                    typeKey = 'restaurant';
+                } else {
+                    imageList = ATTRACTION_IMGS;
+                    typeKey = 'attraction';
+                }
+
+                const imgSrc = item.image_url || imageList[nameHash % imageList.length];
                 const ratingBadge = buildRatingBadge(item.rating, item.reviews, item.rating_source);
+                const imgId = `spotlight-img-${typeKey}-${idx}`;
+
                 container.innerHTML += `
                     <div class="spotlight-item fade-in">
-                        <div class="spotlight-rank">#${idx + 1}</div>
-                        <div class="spotlight-item-icon"><i class="${iconClass}"></i></div>
-                        <div class="spotlight-item-details">
+                        <div class="spotlight-img-col">
+                            <img id="${imgId}" src="${imgSrc}" alt="${item.name}">
+                        </div>
+                        <div class="spotlight-details-col">
                             <div class="spotlight-title-row">
                                 <h4>${item.name}</h4>
+                                <span class="spotlight-price">${priceIndicator}</span>
+                            </div>
+                            <div class="spotlight-title-row">
                                 ${ratingBadge}
                             </div>
-                            <p class="spotlight-address">${item.address}</p>
-                            <p class="spotlight-recommendation"><i class="fa-solid fa-bell-concierge"></i> ${item.recommendation}</p>
+                            <p class="spotlight-address">${item.address || ''}</p>
+                            <p class="spotlight-recommendation"><i class="fa-solid fa-bell-concierge"></i> ${item.recommendation || ''}</p>
                             <a href="${item.maps_url}" target="_blank" class="spotlight-maps-link">
                                 <i class="fa-solid fa-map-location-dot"></i> View on Google Maps <i class="fa-solid fa-arrow-up-right-from-square"></i>
                             </a>
                         </div>
                     </div>`;
+
+                // Asynchronously query Wikipedia page image search for this place if Google Places photo was not provided
+                if (!item.image_url) {
+                    fetchPlaceImage(item.name, data.destination, imgId);
+                }
             });
         };
 
@@ -326,16 +469,24 @@ function renderResults(data, userBudget, numPeople) {
         renderSpotlight(attractionsList, rt.attractions || [], "fa-solid fa-landmark", "No real-time attraction listings found nearby.", "fa-solid fa-landmark");
     }
 
-    // ── Daily Itinerary Cards ──
+    // Hide itinerary cards container initially on query submit
+    document.getElementById('itinerary-trigger-wrap').classList.remove('hidden');
+    document.getElementById('itinerary-section').classList.add('hidden');
+}
+
+// ── Daily Itinerary Cards Reveal (on TripAdvisor CTA click) ──────────────────
+function revealItinerary() {
+    if (!itineraryData) return;
+
     const container = document.getElementById('itinerary-days-container');
     container.innerHTML = "";
 
-    if (!data.itinerary || !Array.isArray(data.itinerary) || data.itinerary.length === 0) {
+    if (!itineraryData.itinerary || !Array.isArray(itineraryData.itinerary) || itineraryData.itinerary.length === 0) {
         container.innerHTML = `<div class="glass-card text-center"><p>No itinerary details returned. Please try again.</p></div>`;
         return;
     }
 
-    data.itinerary.forEach(dayPlan => {
+    itineraryData.itinerary.forEach(dayPlan => {
         const card = document.createElement('div');
         card.className = "day-card fade-in";
 
@@ -391,6 +542,7 @@ function renderResults(data, userBudget, numPeople) {
                     ${ppCost}
                 </div>
                 ` : ''}
+            </div>
             <div class="day-activities">
                 ${dayPlan.narration ? `
                 <div class="day-narration-box">
@@ -446,6 +598,11 @@ function renderResults(data, userBudget, numPeople) {
         `;
         container.appendChild(card);
     });
+
+    document.getElementById('itinerary-trigger-wrap').classList.add('hidden');
+    const itinerarySec = document.getElementById('itinerary-section');
+    itinerarySec.classList.remove('hidden');
+    itinerarySec.scrollIntoView({ behavior: 'smooth' });
 }
 
 function buildRatingBadge(rating, reviews, source) {
@@ -513,14 +670,54 @@ function exportToPDF() {
     });
 }
 
-function switchSpotlightTab(tabName) {
-    document.querySelectorAll('.spotlight-tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.spotlight-list').forEach(list => list.classList.remove('active'));
+// switchSpotlightTab removed since layout is stacked
 
-    const targetBtn  = Array.from(document.querySelectorAll('.spotlight-tab-btn'))
-                            .find(btn => btn.getAttribute('onclick').includes(tabName));
-    if (targetBtn) targetBtn.classList.add('active');
+// ── Fetch dynamic image for individual places via Wikipedia API ───────────
+async function fetchPlaceImage(placeName, destination, imgElementId) {
+    try {
+        // Clean name (remove extra context in parentheses if any)
+        const cleanName = placeName.split('(')[0].trim();
+        const searchQuery = destination ? `${cleanName} ${destination.split(',')[0].trim()}` : cleanName;
+        const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(searchQuery)}&gsrlimit=1&prop=pageimages&piprop=thumbnail&pithumbsize=400&format=json&origin=*`;
+        
+        const response = await fetch(url);
+        if (!response.ok) return;
 
-    const targetList = document.getElementById(`spotlight-list-${tabName}`);
-    if (targetList) targetList.classList.add('active');
+        const data = await response.json();
+        const pages = data.query?.pages;
+        if (!pages) return;
+
+        const pageId = Object.keys(pages)[0];
+        const page = pages[pageId];
+        const source = page?.thumbnail?.source;
+        const title = page?.title || "";
+
+        if (source) {
+            const cleanTitle = title.toLowerCase();
+            const cleanPlace = cleanName.toLowerCase();
+            
+            // Relevancy check: Ensure the page title matches at least one unique keyword of the place name.
+            // This prevents loading unrelated images (like Suzuki cars for "Maruthi Cottages" or generic city photos).
+            const stopWords = ["hotel", "restaurant", "cafe", "resort", "cottage", "inn", "suites", "stay", "and", "the", "of", "in", "by", "with", "a", "an", "at", "to"];
+            const placeKeywords = cleanPlace.split(/\s+/).filter(w => w.length > 2 && !stopWords.includes(w));
+            
+            let isRelevant = false;
+            if (placeKeywords.length === 0) {
+                isRelevant = cleanTitle.includes(cleanPlace);
+            } else {
+                isRelevant = placeKeywords.some(keyword => cleanTitle.includes(keyword));
+            }
+            
+            if (isRelevant) {
+                const imgEl = document.getElementById(imgElementId);
+                if (imgEl) {
+                    imgEl.src = source;
+                }
+            } else {
+                console.warn(`[Wikipedia] Rejected image '${title}' for place '${placeName}' due to low keyword match relevance.`);
+            }
+        }
+    } catch (err) {
+        // Silently fail and let it keep using Unsplash fallback image
+    }
 }

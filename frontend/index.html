@@ -32,8 +32,22 @@
         </header>
 
         <main>
+            <!-- Landing / Introduction Section -->
+            <section id="landing-section" class="glass-card text-center fade-in">
+                <div class="landing-hero">
+                    <i class="fa-solid fa-compass-drafting hero-icon"></i>
+                    <h2>Welcome to RoamAI</h2>
+                    <p class="hero-subtitle">Your Intelligent Travel Planner Assistant</p>
+                    <p class="hero-desc">Discover handpicked hotel stays, delicious local dining hotspots, and top attractions tailored directly to your budget and travel interests. Generate custom day-by-day itineraries instantly.</p>
+                    <button onclick="showInputForm()" class="btn primary-btn large-btn">
+                        <span>Get Started</span>
+                        <i class="fa-solid fa-circle-play"></i>
+                    </button>
+                </div>
+            </section>
+
             <!-- Form Section -->
-            <section id="form-section" class="glass-card fade-in">
+            <section id="form-section" class="glass-card fade-in hidden">
                 <div class="card-header">
                     <i class="fa-solid fa-earth-americas header-icon"></i>
                     <h2>Plan Your Next Adventure</h2>
@@ -170,7 +184,7 @@
                     </div>
 
                     <button type="submit" id="generate-btn" class="btn primary-btn">
-                        <span>Generate Itinerary</span>
+                        <span>Plan My Trip</span>
                         <i class="fa-solid fa-wand-magic-sparkles"></i>
                     </button>
                 </form>
@@ -257,6 +271,11 @@
                         </div>
                     </div>
 
+                    <!-- Destination Image Gallery -->
+                    <div id="destination-gallery" class="destination-gallery hidden">
+                        <!-- Dynamic images injected here -->
+                    </div>
+
                     <!-- Best Time to Visit Callout (shown when no date given) -->
                     <div id="best-time-card" class="best-time-card hidden">
                         <div class="best-time-header">
@@ -334,45 +353,68 @@
                             <i class="fa-solid fa-location-crosshairs spotlights-header-icon"></i>
                             <div>
                                 <h3>Real-Time Local Spotlights</h3>
-                                <p class="spotlights-subtitle">Live recommendations resolved via OpenStreetMap</p>
+                                <p class="spotlights-subtitle">Live recommendations resolved via Geoapify &amp; OpenStreetMap</p>
                             </div>
                         </div>
-                        <div class="spotlights-tabs">
-                            <button class="spotlight-tab-btn active" onclick="switchSpotlightTab('hotels')">
-                                <i class="fa-solid fa-hotel"></i> Stay Recommendations
-                            </button>
-                            <button class="spotlight-tab-btn" onclick="switchSpotlightTab('restaurants')">
-                                <i class="fa-solid fa-utensils"></i> Local Restaurants
-                            </button>
-                            <button class="spotlight-tab-btn" onclick="switchSpotlightTab('attractions')">
-                                <i class="fa-solid fa-landmark"></i> Top Attractions
-                            </button>
-                        </div>
-                        <div class="spotlights-content">
-                            <div id="spotlight-list-hotels" class="spotlight-list active">
-                                <!-- Hotels injected here -->
+                        <div class="spotlights-stacked-container">
+                            <!-- Where to Stay -->
+                            <div class="spotlight-section">
+                                <div class="spotlight-section-header">
+                                    <i class="fa-solid fa-hotel"></i>
+                                    <h4>Where to Stay</h4>
+                                </div>
+                                <div id="spotlight-list-hotels" class="spotlight-list">
+                                    <!-- Hotels injected here -->
+                                </div>
                             </div>
-                            <div id="spotlight-list-restaurants" class="spotlight-list">
-                                <!-- Restaurants injected here -->
+                            
+                            <!-- Where to Eat -->
+                            <div class="spotlight-section">
+                                <div class="spotlight-section-header">
+                                    <i class="fa-solid fa-utensils"></i>
+                                    <h4>Where to Eat</h4>
+                                </div>
+                                <div id="spotlight-list-restaurants" class="spotlight-list">
+                                    <!-- Restaurants injected here -->
+                                </div>
                             </div>
-                            <div id="spotlight-list-attractions" class="spotlight-list">
-                                <!-- Attractions injected here -->
+
+                            <!-- What to See & Do -->
+                            <div class="spotlight-section">
+                                <div class="spotlight-section-header">
+                                    <i class="fa-solid fa-monument"></i>
+                                    <h4>What to See &amp; Do</h4>
+                                </div>
+                                <div id="spotlight-list-attractions" class="spotlight-list">
+                                    <!-- Attractions injected here -->
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Daily Itinerary Cards Container -->
-                    <div id="itinerary-days-container" class="itinerary-grid">
-                        <!-- Cards will be dynamically injected here -->
+                    <!-- TripAdvisor Style "Generate Itinerary" Trigger -->
+                    <div class="itinerary-trigger-box text-center" id="itinerary-trigger-wrap">
+                        <button onclick="revealItinerary()" id="generate-itinerary-btn" class="btn primary-btn large-btn">
+                            <span>Generate Day-by-Day Itinerary</span>
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </button>
+                    </div>
+
+                    <!-- Daily Itinerary Section (revealed on button click) -->
+                    <div id="itinerary-section" class="itinerary-section hidden fade-in">
+                        <div class="section-title-wrap">
+                            <i class="fa-solid fa-calendar-days section-icon"></i>
+                            <h3>Your Custom Day-by-Day Itinerary</h3>
+                        </div>
+                        <div id="itinerary-days-container" class="itinerary-grid">
+                            <!-- Cards will be dynamically injected here -->
+                        </div>
                     </div>
                 </div>
             </section>
         </main>
 
-        <!-- Footer -->
-        <footer>
-            <p>&copy; 2026 RoamAI. Powered by Flask, OpenWeatherMap &amp; Grok API.</p>
-        </footer>
+
     </div>
 
     <script src="script.js"></script>

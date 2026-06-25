@@ -5,15 +5,10 @@ Uses Geoapify APIs as the PRIMARY data source for the travel planner:
 
   1. Geoapify Geocoding API   (/v1/geocode/search)
      → Converts destination name to lat/lon + country/timezone metadata
-     → Replaces OSM Nominatim
 
   2. Geoapify Places API      (/v2/places)
      → Fetches real hotels, restaurants, and tourist attractions
      → Rich structured data: name, formatted address, lat/lon, categories, website, hours
-
-  3. Geoapify Place Details   (/v2/place-details)
-     → Enriches key places with contact, opening hours, website
-     → Called selectively to conserve free-tier credits
 
 All with a single API key (free tier: 3,000 credits/day).
 Get yours at: https://myprojects.geoapify.com
@@ -21,7 +16,6 @@ Get yours at: https://myprojects.geoapify.com
 Fallback chain:
   If Geoapify key absent → OSM Nominatim (no key needed) for geocoding + places.
 """
-
 import os
 import json
 import time
@@ -131,7 +125,7 @@ class GeoapifyPlacesClient:
     # ── Category strings (validated against Geoapify docs) ─────────────────────
     HOTEL_CATS      = "accommodation.hotel,accommodation.hut,accommodation.guest_house,accommodation.hostel,accommodation.motel"
     RESTAURANT_CATS = "catering.restaurant,catering.cafe,catering.fast_food,catering.food_court"
-    ATTRACTION_CATS = "tourism.attraction,tourism.sights,entertainment,leisure"
+    ATTRACTION_CATS = "tourism.attraction,tourism.sights,heritage,building.historic,entertainment,leisure"
 
     # ── Tip templates ─────────────────────────────────────────────────────────
     _HOTEL_TIPS = [
@@ -226,8 +220,6 @@ class GeoapifyPlacesClient:
         else:
             hours_str = "Hours vary — check locally"
 
-        # Place ID for deep-link / detail lookup
-        place_id = props.get("place_id", "")
         # Generate a realistic rating & reviews count via place name hashing
         name_hash = sum(ord(c) for c in name)
         base_r = 3.8 + (name_hash % 12) / 10.0   # 3.8 to 4.9
@@ -242,15 +234,11 @@ class GeoapifyPlacesClient:
             "rating":         rating,
             "reviews":        reviews,
             "rating_source":  "geoapify",
-            "price_tier":     "N/A",
             "category":       category,
-            "description":    "",           # enriched separately if needed
             "hours":          hours_str,
             "website":        website,
             "phone":          phone,
-            "photo_url":      None,
             "maps_url":       _maps_url(name, address),
-            "place_id":       place_id,
             "recommendation": tip,
             "source":         "geoapify",
         }
@@ -365,15 +353,11 @@ class NominatimFallback:
                 "rating":         rating,
                 "reviews":        reviews,
                 "rating_source":  "osm",
-                "price_tier":     "N/A",
                 "category":       query.title(),
-                "description":    "",
                 "hours":          "Hours vary — check locally",
                 "website":        "",
                 "phone":          "",
-                "photo_url":      None,
-                "maps_url":       _maps_url(name),
-                "place_id":       "",
+                "maps_url":       _maps_url(name, addr),
                 "recommendation": tips[i % len(tips)],
                 "source":         "osm",
             })
@@ -387,7 +371,7 @@ class NominatimFallback:
 
     def get_attractions(self, bbox: tuple) -> list:
         results = []
-        for q in ["attraction", "museum", "monument"]:
+        for q in ["attraction", "museum", "monument", "historic"]:
             items = self._search_category(q, bbox, 5, self._ATTRACTION_TIPS)
             seen  = {p["name"] for p in results}
             results += [p for p in items if p["name"] not in seen]
@@ -411,7 +395,11 @@ class GeoapifyService:
     """
 
     def __init__(self):
-        api_key = os.environ.get("GEOAPAFY_API_KEY", "").strip()
+        api_key = (
+            os.environ.get("GEOAPIFY_API_KEY")
+            or os.environ.get("GEOAPAFY_API_KEY")
+            or ""
+        ).strip()
 
         if api_key:
             logger.info("[GeoapifyService] Using Geoapify as primary data source.")
@@ -419,12 +407,9 @@ class GeoapifyService:
             self._places   = GeoapifyPlacesClient(api_key)
             self._mode     = "geoapify"
         else:
-            logger.warning("[GeoapifyService] GEOAPAFY_API_KEY not set — falling back to OSM Nominatim.")
+            logger.warning("[GeoapifyService] GEOAPIFY_API_KEY/GEOAPAFY_API_KEY not set — falling back to OSM Nominatim.")
             self._osm  = NominatimFallback()
             self._mode = "osm"
-
-    def is_available(self) -> bool:
-        return True   # always available (OSM needs no key)
 
     def get_all_data(self, destination: str) -> dict | None:
         """
@@ -461,6 +446,8 @@ class GeoapifyService:
         restaurants = restaurants[:6]
         attractions = attractions[:8]
 
+        self._enrich_with_google(hotels, restaurants, attractions, resolved_name or destination)
+
         logger.info(
             f"[GeoapifyService][Geoapify] '{destination}' → "
             f"Hotels: {len(hotels)}, Restaurants: {len(restaurants)}, "
@@ -476,7 +463,6 @@ class GeoapifyService:
             "hotels":        hotels,
             "restaurants":   restaurants,
             "attractions":   attractions,
-            "city_info":     {"country": country, "timezone": timezone},
             "data_sources":  ["geoapify"],
         }
 
@@ -495,8 +481,10 @@ class GeoapifyService:
         hotels      = self._osm.get_hotels(bbox)
         time.sleep(0.2)
         restaurants = self._osm.get_restaurants(bbox)
-        time.sleep(0.1)
+        time.sleep(0.2)
         attractions = self._osm.get_attractions(bbox)
+
+        self._enrich_with_google(hotels, restaurants, attractions, resolved_name or destination)
 
         logger.info(
             f"[GeoapifyService][OSM] '{destination}' → "
@@ -513,6 +501,26 @@ class GeoapifyService:
             "hotels":        hotels,
             "restaurants":   restaurants,
             "attractions":   attractions,
-            "city_info":     {},
             "data_sources":  ["nominatim"],
         }
+
+    def _enrich_with_google(self, hotels: list, restaurants: list, attractions: list, destination: str):
+        try:
+            from google_places import get_google_place_details
+            logger.info(f"[GeoapifyService] Enriching top 3 places for '{destination}' using Google Places...")
+            for category_list in [hotels[:3], restaurants[:3], attractions[:3]]:
+                for place in category_list:
+                    name = place.get("name")
+                    if not name:
+                        continue
+                    google_data = get_google_place_details(name, destination)
+                    if google_data:
+                        if google_data.get("rating") is not None:
+                            place["rating"] = google_data["rating"]
+                        if google_data.get("reviews") is not None:
+                            place["reviews"] = google_data["reviews"]
+                        place["rating_source"] = "google"
+                        if google_data.get("image_url"):
+                            place["image_url"] = google_data["image_url"]
+        except Exception as e:
+            logger.error(f"[GeoapifyService] Google Places enrichment failed: {e}")

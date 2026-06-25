@@ -1,28 +1,28 @@
 /* ==========================================
-   RoamAI Style System - Premium Travel Theme
+   RoamAI Style System - Premium Travel Theme (Light Mode)
    ========================================== */
 
-/* Design Tokens & Custom Variables */
+/* Design Tokens & Custom Variables (Pleasant 3-Color Light Theme) */
 :root {
-    --bg-color: #0b0f19;
-    --card-bg: rgba(20, 26, 46, 0.45);
-    --card-border: rgba(255, 255, 255, 0.08);
-    --card-border-focus: rgba(99, 102, 241, 0.4);
+    --bg-color: #FDFDFB;      /* Warm Linen Off-White */
+    --card-bg: #F4F3EF;       /* Creamy Sand Card Background */
+    --card-border: rgba(0, 0, 0, 0.06);
+    --card-border-focus: rgba(62, 92, 74, 0.35);
     
-    --text-primary: #f3f4f6;
-    --text-secondary: #9ca3af;
-    --text-muted: #6b7280;
+    --text-primary: #2D302D;    /* Slate Charcoal */
+    --text-secondary: #5C615C;  /* Muted Charcoal */
+    --text-muted: #8B918B;      /* Muted Muted Gray */
     
-    /* Harmonious gradients & theme colors */
-    --primary: #6366f1; /* Indigo */
-    --primary-light: #818cf8;
-    --secondary: #f59e0b; /* Amber/Gold */
-    --secondary-light: #fbbf24;
-    --success: #10b981; /* Emerald */
-    --danger: #ef4444;
+    /* Harmonious light theme colors */
+    --primary: #3E5C4A;        /* Premium Sage Green */
+    --primary-light: #527A64;  /* Mid Sage */
+    --secondary: #E39B52;      /* Warm Gold/Amber */
+    --secondary-light: #F0B175;
+    --success: #2E7D32;        /* Deep Emerald */
+    --danger: #C62828;         /* Crimson */
     
-    --glow-primary: rgba(99, 102, 241, 0.25);
-    --glow-secondary: rgba(245, 158, 11, 0.15);
+    --glow-primary: rgba(62, 92, 74, 0.08);
+    --glow-secondary: rgba(227, 155, 82, 0.06);
     
     --radius-sm: 8px;
     --radius-md: 16px;
@@ -61,7 +61,7 @@ body {
     border-radius: 50%;
     filter: blur(120px);
     z-index: -1;
-    opacity: 0.15;
+    opacity: 0.08; /* Subtler blur for light mode */
     pointer-events: none;
 }
 
@@ -425,8 +425,9 @@ input[type="number"]:focus {
     color: var(--text-primary);
     top: 50%;
     left: 50%;
-    margin-top: -12px;
-    margin-left: -12px;
+    margin-top: 0;
+    margin-left: 0;
+    transform: translate(-50%, -50%);
     animation: flyPlane 3s linear infinite;
 }
 
@@ -436,8 +437,8 @@ input[type="number"]:focus {
 }
 
 @keyframes flyPlane {
-    0% { transform: rotate(0deg) translateY(-25px) rotate(0deg); }
-    100% { transform: rotate(360deg) translateY(-25px) rotate(-360deg); }
+    0% { transform: translate(-50%, -50%) rotate(0deg) translateY(-32px); }
+    100% { transform: translate(-50%, -50%) rotate(360deg) translateY(-32px); }
 }
 
 #loader-status {
@@ -739,61 +740,45 @@ input[type="number"]:focus {
     margin-top: 2px;
 }
 
-.spotlights-tabs {
+.spotlights-stacked-container {
     display: flex;
-    gap: 8px;
-    border-bottom: 1px solid var(--card-border);
-    padding-bottom: 12px;
-    margin-bottom: 16px;
-    overflow-x: auto;
+    flex-direction: column;
+    gap: 28px;
+    margin-top: 16px;
 }
 
-.spotlight-tab-btn {
-    background: transparent;
-    border: 1px solid transparent;
-    color: var(--text-secondary);
-    font-family: var(--font-sans);
-    font-size: 0.85rem;
-    font-weight: 600;
-    padding: 8px 16px;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
+.spotlight-section {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: var(--transition-snappy);
-    white-space: nowrap;
-}
-
-.spotlight-tab-btn i {
-    font-size: 0.95rem;
-    transition: var(--transition-snappy);
-}
-
-.spotlight-tab-btn:hover {
-    color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.03);
-}
-
-.spotlight-tab-btn.active {
-    color: var(--text-primary);
-    background: rgba(99, 102, 241, 0.1);
-    border-color: rgba(99, 102, 241, 0.3);
-    box-shadow: 0 0 10px rgba(99, 102, 241, 0.15);
-}
-
-.spotlight-tab-btn.active i {
-    color: var(--primary-light);
-}
-
-.spotlight-list {
-    display: none;
     flex-direction: column;
     gap: 12px;
 }
 
-.spotlight-list.active {
+.spotlight-section-header {
     display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--card-border);
+    margin-bottom: 4px;
+}
+
+.spotlight-section-header i {
+    font-size: 1.1rem;
+    color: var(--primary-light);
+}
+
+.spotlight-section-header h4 {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0;
+}
+
+.spotlight-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .spotlight-item {
@@ -1311,16 +1296,16 @@ footer {
 /* Month input styling */
 input[type="month"] {
     width: 100%;
-    background: rgba(10, 12, 22, 0.6);
+    background: var(--bg-color);
     border: 1px solid var(--card-border);
     border-radius: var(--radius-sm);
-    padding: 14px 42px 14px 16px;
+    padding: 14px 16px 14px 45px;
     color: var(--text-primary);
     font-family: var(--font-sans);
     font-size: 1rem;
     outline: none;
     transition: var(--transition-snappy);
-    color-scheme: dark;
+    color-scheme: light;
 }
 
 input[type="month"]:focus {
@@ -1568,21 +1553,21 @@ input[type="month"]:focus {
 
 .rainy-banner-icon {
     font-size: 1.5rem;
-    color: #f59e0b;
-    filter: drop-shadow(0 2px 6px rgba(245, 158, 11, 0.4));
+    color: #b45309;
+    filter: drop-shadow(0 2px 6px rgba(245, 158, 11, 0.2));
 }
 
 .rainy-banner-text h3 {
     font-family: var(--font-display);
     font-size: 1.05rem;
     font-weight: 700;
-    color: #fbbf24;
+    color: #b45309;
     margin-bottom: 6px;
 }
 
 .rainy-banner-text p {
     font-size: 0.88rem;
-    color: rgba(253, 230, 138, 0.85);
+    color: var(--text-secondary);
     line-height: 1.5;
 }
 
@@ -1594,8 +1579,8 @@ input[type="month"]:focus {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: rgba(245, 158, 11, 0.1);
-    border: 1px solid rgba(245, 158, 11, 0.25);
+    background: rgba(245, 158, 11, 0.06);
+    border: 1px solid rgba(245, 158, 11, 0.15);
     border-radius: var(--radius-sm);
     padding: 12px 18px;
     min-width: 200px;
@@ -1603,7 +1588,7 @@ input[type="month"]:focus {
 
 .rainy-alt-icon {
     font-size: 1.3rem;
-    color: #f59e0b;
+    color: #b45309;
 }
 
 .rainy-alt-label {
@@ -1612,7 +1597,7 @@ input[type="month"]:focus {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: rgba(245, 158, 11, 0.7);
+    color: var(--text-muted);
     margin-bottom: 3px;
 }
 
@@ -1621,7 +1606,7 @@ input[type="month"]:focus {
     font-family: var(--font-display);
     font-size: 1rem;
     font-weight: 700;
-    color: #fbbf24;
+    color: #b45309;
 }
 
 /* ── Day Card Header Layout Upgrades ────────────────────────────── */
@@ -1655,17 +1640,17 @@ input[type="month"]:focus {
     gap: 7px;
     padding: 6px 14px;
     border-radius: 50px;
-    background: rgba(56, 189, 248, 0.08);
-    border: 1px solid rgba(56, 189, 248, 0.2);
+    background: rgba(2, 132, 199, 0.05);
+    border: 1px solid rgba(2, 132, 199, 0.15);
     font-size: 0.82rem;
     font-weight: 500;
-    color: #7dd3fc;
+    color: #0284c7;
     white-space: nowrap;
     flex-shrink: 0;
 }
 
 .day-weather-pill i {
-    color: #38bdf8;
+    color: #0284c7;
     font-size: 0.9rem;
 }
 
@@ -1677,16 +1662,16 @@ input[type="month"]:focus {
     margin-top: 5px;
     padding: 3px 10px;
     border-radius: 50px;
-    background: rgba(16, 185, 129, 0.08);
-    border: 1px solid rgba(16, 185, 129, 0.2);
+    background: rgba(46, 125, 50, 0.05);
+    border: 1px solid rgba(46, 125, 50, 0.15);
     font-size: 0.78rem;
     font-weight: 600;
-    color: #6ee7b7;
+    color: #2e7d32;
 }
 
 .hotel-price-badge i {
     font-size: 0.7rem;
-    color: #34d399;
+    color: #2e7d32;
 }
 
 /* ── Transport Activity Row ──────────────────────────────────────── */
@@ -1699,7 +1684,7 @@ input[type="month"]:focus {
 }
 .activity-transport .desc {
     font-size: 0.88rem;
-    color: rgba(253, 230, 138, 0.85);
+    color: var(--text-primary);
     line-height: 1.5;
 }
 
@@ -1726,8 +1711,8 @@ input[type="month"]:focus {
     gap: 8px;
     font-size: 0.87rem;
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.04);
     border-radius: 6px;
     padding: 5px 10px;
 }
@@ -1746,7 +1731,7 @@ input[type="month"]:focus {
 
 .entry-fee-amount {
     font-weight: 700;
-    color: #10b981;
+    color: var(--primary);
     white-space: nowrap;
     font-size: 0.83rem;
 }
@@ -1780,20 +1765,20 @@ input[type="month"]:focus {
 
 /* ── Day Narration Guide Box ─────────────────────────────────────── */
 .day-narration-box {
-    background: rgba(99, 102, 241, 0.04);
-    border-left: 3px solid var(--secondary);
+    background: rgba(62, 92, 74, 0.04);
+    border-left: 3px solid var(--primary);
     padding: 14px 18px;
     border-radius: 0 var(--radius-md) var(--radius-md) 0;
     margin-bottom: 18px;
     display: flex;
     gap: 12px;
     align-items: flex-start;
-    border-top: 1px solid rgba(255, 255, 255, 0.02);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-    border-right: 1px solid rgba(255, 255, 255, 0.02);
+    border-top: 1px solid rgba(0, 0, 0, 0.02);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.02);
+    border-right: 1px solid rgba(0, 0, 0, 0.02);
 }
 .narration-icon {
-    color: var(--secondary-light);
+    color: var(--primary);
     font-size: 1.1rem;
     margin-top: 2px;
     flex-shrink: 0;
@@ -1808,17 +1793,17 @@ input[type="month"]:focus {
 /* Print styling for PDF */
 @media print {
     .day-narration-box {
-        background: #fffbeb !important;
-        border-left: 3px solid #b45309 !important;
-        border-color: #fde68a !important;
-        color: #92400e !important;
+        background: #f4f3ef !important;
+        border-left: 3px solid #3e5c4a !important;
+        border-color: #3e5c4a !important;
+        color: #2d302d !important;
         page-break-inside: avoid;
     }
     .narration-icon {
-        color: #b45309 !important;
+        color: #3e5c4a !important;
     }
     .narration-text {
-        color: #1f2937 !important;
+        color: #2d302d !important;
     }
 }
 
@@ -1831,11 +1816,11 @@ input[type="month"]:focus {
     padding: 22px 28px;
     border-radius: var(--radius-md);
     background: linear-gradient(135deg,
-        rgba(239, 68, 68, 0.15) 0%,
-        rgba(245, 158, 11, 0.1) 50%,
-        rgba(239, 68, 68, 0.08) 100%);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    box-shadow: 0 4px 24px rgba(239, 68, 68, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        rgba(198, 40, 40, 0.05) 0%,
+        rgba(227, 155, 82, 0.05) 50%,
+        rgba(198, 40, 40, 0.02) 100%);
+    border: 1px solid rgba(198, 40, 40, 0.2);
+    box-shadow: 0 4px 24px rgba(198, 40, 40, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5);
     margin-bottom: 20px;
     flex-wrap: wrap;
 }
@@ -1852,8 +1837,8 @@ input[type="month"]:focus {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: rgba(239, 68, 68, 0.15);
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: rgba(198, 40, 40, 0.08);
+    border: 1px solid rgba(198, 40, 40, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1862,21 +1847,21 @@ input[type="month"]:focus {
 
 .budget-banner-icon {
     font-size: 1.5rem;
-    color: #f87171;
-    filter: drop-shadow(0 2px 6px rgba(239, 68, 68, 0.4));
+    color: #c62828;
+    filter: drop-shadow(0 2px 6px rgba(198, 40, 40, 0.2));
 }
 
 .budget-banner-text h3 {
     font-family: var(--font-display);
     font-size: 1.05rem;
     font-weight: 700;
-    color: #fca5a5;
+    color: #c62828;
     margin-bottom: 6px;
 }
 
 .budget-banner-text p {
     font-size: 0.88rem;
-    color: rgba(252, 165, 165, 0.85);
+    color: var(--text-secondary);
     line-height: 1.5;
 }
 
@@ -1888,8 +1873,8 @@ input[type="month"]:focus {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.25);
+    background: rgba(198, 40, 40, 0.05);
+    border: 1px solid rgba(198, 40, 40, 0.15);
     border-radius: var(--radius-sm);
     padding: 12px 18px;
     min-width: 200px;
@@ -1897,7 +1882,7 @@ input[type="month"]:focus {
 
 .budget-alt-icon {
     font-size: 1.3rem;
-    color: #f87171;
+    color: #c62828;
 }
 
 .budget-alt-label {
@@ -1914,7 +1899,7 @@ input[type="month"]:focus {
     font-family: var(--font-display);
     font-size: 1.15rem;
     font-weight: 800;
-    color: #f87171;
+    color: #c62828;
 }
 
 @media print {
@@ -1932,6 +1917,440 @@ input[type="month"]:focus {
         color: #991b1b !important;
     }
 }
+
+/* =========================================================================
+   ADDITIONAL LIGHT MODE CUSTOM STYLES (LANDING, GALLERY, SPOTLIGHTS)
+   ========================================================================= */
+
+/* Landing Page Styles */
+#landing-section {
+    padding: 60px 40px;
+    margin: 40px auto;
+    max-width: 700px;
+    border-radius: var(--radius-lg);
+    background: var(--card-bg);
+}
+
+.landing-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.hero-icon {
+    font-size: 3.5rem;
+    color: var(--primary);
+    animation: floatIcon 4s ease-in-out infinite alternate;
+}
+
+@keyframes floatIcon {
+    0% { transform: translateY(0px) rotate(0deg); }
+    100% { transform: translateY(-8px) rotate(5deg); }
+}
+
+#landing-section h2 {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.hero-desc {
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    max-width: 540px;
+    margin-bottom: 12px;
+}
+
+/* Destination Gallery Styling */
+.destination-gallery {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: 240px;
+    gap: 12px;
+    margin: 24px 0;
+    width: 100%;
+}
+
+.destination-gallery-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: var(--transition-smooth);
+}
+
+.destination-gallery-img:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* TripAdvisor style spotlight updates */
+.spotlight-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px 0;
+}
+
+.spotlight-item {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    padding: 18px;
+    background: var(--bg-color);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    align-items: center;
+    transition: var(--transition-smooth);
+}
+
+.spotlight-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.03);
+    border-color: var(--primary-light);
+}
+
+.spotlight-img-col {
+    width: 130px;
+    height: 95px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    flex-shrink: 0;
+    background: var(--card-bg);
+}
+
+.spotlight-img-col img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: var(--transition-smooth);
+}
+
+.spotlight-item:hover .spotlight-img-col img {
+    transform: scale(1.06);
+}
+
+.spotlight-details-col {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.spotlight-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.spotlight-title-row h4 {
+    font-family: var(--font-display);
+    font-size: 1.12rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.spotlight-rating {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.spotlight-rating i {
+    color: var(--secondary); /* Gold stars */
+}
+
+.spotlight-price {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--primary-light);
+    background: rgba(62, 92, 74, 0.05);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.spotlight-address {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+.spotlight-recommendation {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin: 0;
+    font-style: italic;
+    background: rgba(0, 0, 0, 0.01);
+    padding: 6px 10px;
+    border-radius: 4px;
+    border-left: 2px solid var(--primary-light);
+}
+
+.spotlight-maps-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition-snappy);
+    width: fit-content;
+}
+
+.spotlight-maps-link:hover {
+    color: var(--primary-light);
+    text-decoration: underline;
+}
+
+/* Daily Itinerary reveal and triggers */
+.itinerary-trigger-box {
+    margin: 36px 0 20px 0;
+    padding: 10px;
+}
+
+.itinerary-section {
+    margin-top: 36px;
+    border-top: 2px dashed var(--card-border);
+    padding-top: 36px;
+}
+
+.section-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.section-title-wrap h3 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.section-icon {
+    font-size: 1.5rem;
+    color: var(--primary);
+}
+
+.large-btn {
+    padding: 16px 36px;
+    font-size: 1.05rem;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px var(--glow-primary);
+}
+
+.large-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--glow-primary);
+}
+
+/* Light theme support for custom components */
+.glass-card {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--card-border) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
+    color: var(--text-primary) !important;
+}
+
+.glass-card:hover {
+    border-color: rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05) !important;
+}
+
+.input-wrapper input, .input-wrapper textarea {
+    background: var(--bg-color) !important;
+    border: 1px solid var(--card-border) !important;
+    color: var(--text-primary) !important;
+}
+
+.input-wrapper input:focus, .input-wrapper textarea:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px var(--glow-primary) !important;
+}
+
+.interest-pill {
+    background: var(--bg-color) !important;
+    border: 1px solid var(--card-border) !important;
+    color: var(--text-primary) !important;
+}
+
+.hidden-checkbox:checked + .interest-pill {
+    background: var(--primary) !important;
+    color: #FFF !important;
+    border-color: var(--primary) !important;
+}
+
+.btn.primary-btn {
+    background: var(--primary) !important;
+    color: #FFF !important;
+}
+
+.btn.primary-btn:hover {
+    background: var(--primary-light) !important;
+}
+
+.btn.secondary-btn {
+    background: var(--bg-color) !important;
+    border: 1px solid var(--card-border) !important;
+    color: var(--text-primary) !important;
+}
+
+.btn.secondary-btn:hover {
+    background: var(--card-bg) !important;
+}
+
+/* Fix text sizes & tags */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--primary);
+}
+
+.tagline {
+    color: var(--text-secondary) !important;
+}
+
+.field-hint {
+    color: var(--text-muted) !important;
+}
+
+footer p {
+    color: var(--text-muted) !important;
+}
+
+/* Spinner colors adjustments */
+.spinner-ring {
+    border: 4px solid var(--card-bg) !important;
+    border-top: 4px solid var(--primary) !important;
+}
+.spinner-plane {
+    color: var(--primary) !important;
+}
+
+/* Itinerary cards formatting */
+.day-card {
+    background: var(--bg-color) !important;
+    border: 1px solid var(--card-border) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02) !important;
+    color: var(--text-primary) !important;
+}
+
+.day-card:hover {
+    border-color: var(--primary-light) !important;
+}
+
+.breakdown-pill {
+    background: var(--card-bg) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--card-border) !important;
+}
+
+.day-cost-badge {
+    background: var(--primary) !important;
+    color: #FFF !important;
+}
+
+.activity-icon-box {
+    background: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+}
+
+.activity-icon-box i {
+    color: var(--primary-light) !important;
+}
+
+.time-label {
+    color: var(--primary) !important;
+}
+
+.results-header-banner {
+    color: var(--text-primary) !important;
+}
+
+.budget-badge-container {
+    background: var(--bg-color) !important;
+    border-top: 1px solid var(--card-border) !important;
+}
+
+.budget-item .label {
+    color: var(--text-secondary) !important;
+}
+
+.budget-item .val {
+    color: var(--text-primary) !important;
+}
+
+.budget-item .val.highlight {
+    color: var(--primary) !important;
+}
+
+.budget-item .val.accent {
+    color: var(--primary-light) !important;
+}
+
+.best-time-card {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--card-border) !important;
+}
+
+.best-time-icon {
+    color: var(--primary) !important;
+}
+
+.safety-alerts-card {
+    background: rgba(198, 40, 40, 0.03) !important;
+    border: 1px solid rgba(198, 40, 40, 0.15) !important;
+}
+
+.safety-icon {
+    color: #c62828 !important;
+}
+
+.safety-alerts-list li i {
+    color: #c62828 !important;
+}
+
+/* Spotlights Tab items */
+.spotlight-tab-btn {
+    background: var(--bg-color) !important;
+    border: 1px solid var(--card-border) !important;
+    color: var(--text-secondary) !important;
+}
+
+.spotlight-tab-btn.active {
+    background: var(--primary) !important;
+    color: #FFF !important;
+    border-color: var(--primary) !important;
+}
+
+.spotlight-tab-btn:hover:not(.active) {
+    background: var(--card-bg) !important;
+    color: var(--text-primary) !important;
+}
+
+.spotlight-empty-state i {
+    color: var(--text-muted) !important;
+}
+
+.spotlight-empty-state p {
+    color: var(--text-secondary) !important;
+}
+
 
 
 
