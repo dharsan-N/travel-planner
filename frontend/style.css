@@ -1902,6 +1902,45 @@ input[type="month"]:focus {
     color: #c62828;
 }
 
+/* ── Budget banner state modifiers ── */
+.budget-warning-banner.budget-ok {
+    background: linear-gradient(135deg,
+        rgba(22, 101, 52, 0.06) 0%,
+        rgba(34, 197, 94, 0.06) 50%,
+        rgba(22, 101, 52, 0.03) 100%);
+    border-color: rgba(22, 101, 52, 0.25);
+    box-shadow: 0 4px 24px rgba(22, 101, 52, 0.06), inset 0 1px 0 rgba(255,255,255,0.5);
+}
+.budget-warning-banner.budget-ok .budget-banner-icon { color: #15803d; filter: drop-shadow(0 2px 6px rgba(22,101,52,0.2)); }
+.budget-warning-banner.budget-ok .budget-banner-text h3 { color: #15803d; }
+.budget-warning-banner.budget-ok .budget-banner-icon-wrap { background: rgba(22,101,52,0.08); border-color: rgba(22,101,52,0.2); }
+.budget-warning-banner.budget-ok .budget-alt-box { background: rgba(22,101,52,0.06); border-color: rgba(22,101,52,0.18); }
+.budget-warning-banner.budget-ok .budget-alt-icon { color: #15803d; }
+.budget-warning-banner.budget-ok .budget-recommended-value { color: #15803d; }
+
+.budget-warning-banner.budget-warn {
+    background: linear-gradient(135deg,
+        rgba(198, 40, 40, 0.05) 0%,
+        rgba(227, 155, 82, 0.05) 50%,
+        rgba(198, 40, 40, 0.02) 100%);
+    border-color: rgba(198, 40, 40, 0.2);
+}
+
+/* ── Curated place-price notes row ── */
+.activity-price-notes {
+    border-left: 3px solid rgba(var(--accent-rgb, 99,102,241), 0.5);
+    background: rgba(99, 102, 241, 0.03);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.price-notes-text {
+    font-size: 0.83rem !important;
+    color: var(--text-secondary) !important;
+    font-style: italic;
+    letter-spacing: 0.01em;
+    line-height: 1.6 !important;
+}
+
+
 @media print {
     .budget-warning-banner {
         background: #fff5f5 !important;
@@ -2351,6 +2390,170 @@ footer p {
     color: var(--text-secondary) !important;
 }
 
+/* ==========================================================================
+   Spotlight Card Selection Checkboxes
+   ========================================================================== */
 
+.spotlight-item {
+    position: relative;
+}
 
+/* Selection Wrapper */
+.spotlight-select-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: -4px;
+    flex-shrink: 0;
+}
 
+/* Custom Checkbox Design */
+.spotlight-checkbox-label {
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+}
+
+.spotlight-checkbox {
+    display: none !important;
+}
+
+.spotlight-checkbox-custom {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    border: 2px solid var(--text-muted);
+    border-radius: 50%;
+    background-color: var(--bg-color);
+    transition: var(--transition-smooth);
+    color: transparent;
+    font-size: 0.75rem;
+}
+
+/* Checkbox States */
+.spotlight-checkbox:checked + .spotlight-checkbox-custom {
+    border-color: var(--primary);
+    background-color: var(--primary);
+    color: #FFF;
+}
+
+/* Selected Highlight State for Spotlight Items */
+.spotlight-item.selected {
+    border-color: var(--primary) !important;
+    background: rgba(62, 92, 74, 0.03) !important;
+    box-shadow: 0 4px 18px rgba(62, 92, 74, 0.08) !important;
+}
+
+/* Globe and Plane Loader Animations */
+.loader-container {
+    padding: 2.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.globe-loader-wrap {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 2rem auto;
+}
+
+.globe-svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 20px rgba(79, 70, 229, 0.35));
+    animation: globe-spin 30s linear infinite;
+}
+
+@keyframes globe-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.orbit-ring {
+    position: absolute;
+    top: -12px;
+    left: -12px;
+    right: -12px;
+    bottom: -12px;
+    border: 2px dashed rgba(99, 102, 241, 0.25);
+    border-radius: 50%;
+    animation: orbit-rotate 4s linear infinite;
+    transform-origin: center center;
+}
+
+@keyframes orbit-rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.plane-dot {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.plane-icon {
+    font-size: 1.5rem;
+    color: #10b981; /* Emerald-400 */
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+    transform: rotate(90deg); /* Face tangent to the clockwise orbit */
+    transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Takeoff Animation Class added in JS */
+.plane-takeoff {
+    animation: plane-fly-away 1s forwards cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@keyframes plane-fly-away {
+    0% {
+        transform: rotate(90deg) scale(1) translate(0, 0);
+        opacity: 1;
+    }
+    30% {
+        transform: rotate(45deg) scale(1.3) translate(20px, -20px);
+        opacity: 1;
+    }
+    100% {
+        transform: rotate(15deg) scale(2.5) translate(350px, -350px);
+        opacity: 0;
+    }
+}
+
+/* Dynamic Currency Hint Pill styling */
+.currency-hint-pill {
+    margin-top: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 50px;
+    color: #10b981;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.currency-hint-pill.visible {
+    opacity: 1;
+    transform: translateY(0);
+}

@@ -15,11 +15,11 @@ class OpenWeatherService:
     def get_weather(self, destination: str) -> dict:
         """
         Fetches current weather for the given destination using OpenWeatherMap API.
-        If the API key is not present or an error occurs, it falls back to generating a realistic mock weather object.
+        If the API key is not present or an error occurs, it returns None.
         """
         if not self.api_key:
-            logger.warning("OPENWEATHERMAP_API_KEY environment variable is not set. Using mock weather data.")
-            return self._generate_mock_weather(destination)
+            logger.warning("OPENWEATHERMAP_API_KEY environment variable is not set. Weather widget will be hidden.")
+            return None
 
         try:
             params = {
@@ -44,28 +44,9 @@ class OpenWeatherService:
                     "condition": condition.title()
                 }
             else:
-                logger.error(f"OpenWeatherMap API returned status code {response.status_code}: {response.text}. Falling back to mock data.")
-                return self._generate_mock_weather(destination)
+                logger.error(f"OpenWeatherMap API returned status code {response.status_code}: {response.text}.")
+                return None
 
         except Exception as e:
-            logger.error(f"Error fetching weather from OpenWeatherMap: {e}. Falling back to mock data.")
-            return self._generate_mock_weather(destination)
-
-    def _generate_mock_weather(self, destination: str) -> dict:
-        """
-        Generates realistic mock weather based on the destination name.
-        Deterministic temperature ranges based on string hashing, with standard conditions.
-        """
-        # Simple hash to make the mock weather somewhat consistent for the same destination
-        dest_hash = sum(ord(char) for char in destination)
-        
-        conditions = ["Sunny", "Partly Cloudy", "Breezy", "Pleasant", "Clear", "Mildly Humid", "Overcast"]
-        condition = conditions[dest_hash % len(conditions)]
-        
-        # Pick a temperature range based on typical travel destinations (from 15 to 33 deg Celsius)
-        base_temp = 15 + (dest_hash % 19)
-        
-        return {
-            "temperature": f"{base_temp}°C",
-            "condition": condition
-        }
+            logger.error(f"Error fetching weather from OpenWeatherMap: {e}.")
+            return None

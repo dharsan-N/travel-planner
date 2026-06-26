@@ -34,6 +34,28 @@ def serve_index():
         logger.error(f"Error serving index.html: {e}")
         return "Backend is running! Frontend index.html not found.", 404
 
+@app.route("/get-spotlights", methods=["POST"])
+def get_spotlights_endpoint():
+    try:
+        data = request.get_json() or {}
+        destination = data.get("destination", "").strip()
+        if not destination:
+            return jsonify({"error": "Destination is required."}), 400
+        
+        logger.info(f"Retrieving spotlights for: {destination}")
+        realtime_data = grok_service.geoapify_service.get_all_data(destination)
+        if not realtime_data:
+            return jsonify({"error": "Destination could not be geolocated or resolved."}), 404
+            
+        return jsonify({
+            "destination": destination,
+            "realtime_data": realtime_data,
+            "country": realtime_data.get("country", "")
+        })
+    except Exception as e:
+        logger.exception("Error during spotlights retrieval")
+        return jsonify({"error": f"An internal server error occurred: {str(e)}"}), 500
+
 @app.route("/generate-itinerary", methods=["POST"])
 def generate_itinerary_endpoint():
     try:
@@ -45,6 +67,9 @@ def generate_itinerary_endpoint():
         preferences = data.get("preferences", "").strip()
         num_people = data.get("num_people", 1)
         travel_date = data.get("travel_date", "").strip()  # format "YYYY-MM" or ""
+        selected_hotels = data.get("selected_hotels", [])
+        selected_restaurants = data.get("selected_restaurants", [])
+        selected_attractions = data.get("selected_attractions", [])
 
         if not destination:
             return jsonify({"error": "Destination is required."}), 400
@@ -76,13 +101,17 @@ def generate_itinerary_endpoint():
 
         logger.info(
             f"Generating itinerary for: {destination} | People: {num_people} | "
-            f"Budget: ₹{budget} | Date: '{travel_date}' | Preferences: {preferences}"
+            f"Budget: ₹{budget} | Date: '{travel_date}' | Preferences: {preferences} | "
+            f"Selected Hotels: {len(selected_hotels)} | Selected Attractions: {len(selected_attractions)}"
         )
 
         weather_info = openweather_service.get_weather(destination)
         itinerary_info = grok_service.generate_itinerary(
             destination, days, budget, interests, preferences,
-            num_people=num_people, travel_date=travel_date
+            num_people=num_people, travel_date=travel_date,
+            selected_hotels=selected_hotels,
+            selected_restaurants=selected_restaurants,
+            selected_attractions=selected_attractions
         )
 
         response_payload = {
@@ -97,7 +126,7 @@ def generate_itinerary_endpoint():
             "weather": {
                 "temperature": weather_info.get("temperature", "N/A"),
                 "condition": weather_info.get("condition", "Unknown")
-            },
+            } if weather_info else None,
             "realtime_data": itinerary_info.get("realtime_data", {}),
             "safety_tips": itinerary_info.get("safety_tips", []),
             "itinerary": itinerary_info.get("itinerary", [])

@@ -66,7 +66,7 @@ def get_google_place_details(place_name: str, destination: str) -> dict | None:
             headers={
                 "Content-Type": "application/json",
                 "X-Goog-Api-Key": API_KEY,
-                "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.photos,places.name",
+                "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.photos,places.name,places.priceLevel",
                 "Accept": "application/json",
                 "User-Agent": "RoamAITravelPlanner/3.0"
             },
@@ -86,6 +86,7 @@ def get_google_place_details(place_name: str, destination: str) -> dict | None:
         result = places[0]
         rating = result.get("rating")
         reviews = result.get("userRatingCount", 0)
+        price_level = result.get("priceLevel")
         
         # Resolve photo
         photo_url = None
@@ -101,7 +102,8 @@ def get_google_place_details(place_name: str, destination: str) -> dict | None:
         details = {
             "rating": float(rating) if rating is not None else None,
             "reviews": int(reviews),
-            "image_url": photo_url
+            "image_url": photo_url,
+            "price_level": price_level
         }
 
         # Cache successful lookup

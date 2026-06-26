@@ -92,7 +92,7 @@
                         <!-- Budget Input -->
                         <div class="form-group col">
                             <label for="budget">
-                                <i class="fa-solid fa-indian-rupee-sign"></i> Total Group Budget (INR)
+                                <i class="fa-solid fa-indian-rupee-sign" id="budget-currency-icon"></i> Total Group Budget (<span id="budget-currency-code">INR</span>)
                             </label>
                             <div class="input-wrapper">
                                 <input type="number" id="budget" name="budget" min="1000" placeholder="e.g. 50000" value="50000" required>
@@ -173,6 +173,8 @@
                         </div>
                     </div>
 
+
+
                     <!-- Custom Preferences Input -->
                     <div class="form-group">
                         <label for="preferences">
@@ -184,21 +186,58 @@
                     </div>
 
                     <button type="submit" id="generate-btn" class="btn primary-btn">
-                        <span>Plan My Trip</span>
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Search Location &amp; Highlights</span>
+                        <i class="fa-solid fa-magnifying-glass"></i>
                     </button>
                 </form>
             </section>
 
-            <!-- Loading Spinner State -->
+            <!-- Loading Spinner State (Globe + Plane animation) -->
             <section id="loader-section" class="glass-card hidden text-center">
                 <div class="loader-container">
-                    <div class="spinner">
-                        <i class="fa-solid fa-plane spinner-plane"></i>
-                        <div class="spinner-ring"></div>
+                    <div class="globe-loader-wrap">
+                        <!-- SVG Globe -->
+                        <svg class="globe-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Outer glow ring -->
+                            <circle cx="100" cy="100" r="88" fill="none" stroke="rgba(99,102,241,0.18)" stroke-width="6"/>
+                            <!-- Globe base -->
+                            <circle cx="100" cy="100" r="80" fill="url(#globeGrad)" />
+                            <!-- Lat lines -->
+                            <ellipse cx="100" cy="100" rx="80" ry="28" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.2"/>
+                            <ellipse cx="100" cy="100" rx="80" ry="55" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+                            <!-- Lon lines -->
+                            <line x1="100" y1="20" x2="100" y2="180" stroke="rgba(255,255,255,0.16)" stroke-width="1.2"/>
+                            <ellipse cx="100" cy="100" rx="38" ry="80" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+                            <ellipse cx="100" cy="100" rx="70" ry="80" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1"/>
+                            <!-- Stylized continents -->
+                            <path d="M72 65 Q82 55 95 62 Q105 60 110 70 Q118 72 115 82 Q108 90 98 85 Q88 88 80 82 Q68 76 72 65Z" fill="rgba(52,211,153,0.62)" />
+                            <path d="M110 75 Q122 68 132 78 Q138 88 130 96 Q120 100 112 93 Q106 85 110 75Z" fill="rgba(52,211,153,0.5)" />
+                            <path d="M60 108 Q68 100 80 105 Q86 115 78 122 Q68 126 62 118 Q56 112 60 108Z" fill="rgba(52,211,153,0.55)" />
+                            <path d="M118 108 Q128 103 136 112 Q140 122 132 128 Q122 130 116 122 Q112 114 118 108Z" fill="rgba(52,211,153,0.48)" />
+                            <path d="M85 128 Q95 122 105 128 Q108 138 100 143 Q90 145 85 138 Q82 132 85 128Z" fill="rgba(52,211,153,0.42)" />
+                            <!-- Shimmer overlay -->
+                            <circle cx="72" cy="72" r="22" fill="url(#shimmerGrad)" />
+                            <defs>
+                                <radialGradient id="globeGrad" cx="38%" cy="35%" r="65%">
+                                    <stop offset="0%" stop-color="#4f46e5"/>
+                                    <stop offset="60%" stop-color="#1e1b4b"/>
+                                    <stop offset="100%" stop-color="#0f0f23"/>
+                                </radialGradient>
+                                <radialGradient id="shimmerGrad" cx="30%" cy="30%" r="70%">
+                                    <stop offset="0%" stop-color="rgba(255,255,255,0.18)"/>
+                                    <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+                                </radialGradient>
+                            </defs>
+                        </svg>
+                        <!-- Orbiting Plane -->
+                        <div class="orbit-ring" id="orbit-ring">
+                            <div class="plane-dot" id="plane-dot">
+                                <i class="fa-solid fa-plane plane-icon" id="loader-plane-icon"></i>
+                            </div>
+                        </div>
                     </div>
-                    <h3 id="loader-status">Consulting Travel AI...</h3>
-                    <p class="loader-sub">Preparing flight routes, scanning weather charts, and mapping activities.</p>
+                    <h3 id="loader-status" class="loader-title-text">Scanning Location Spotlights...</h3>
+                    <p class="loader-sub">Retrieving local hotels, dining, and attractions...</p>
                 </div>
             </section>
 
@@ -231,13 +270,13 @@
                                 </div>
                             </div>
                             <!-- Weather Card inside Banner -->
-                            <div id="weather-card" class="weather-widget">
+                            <div id="weather-card" class="weather-widget hidden">
                                 <div class="weather-icon-box">
                                     <i id="weather-icon" class="fa-solid fa-cloud-sun"></i>
                                 </div>
                                 <div class="weather-text-box">
-                                    <span class="weather-temp" id="result-temperature">24°C</span>
-                                    <span class="weather-desc" id="result-condition">Partly Cloudy</span>
+                                    <span class="weather-temp" id="result-temperature">N/A</span>
+                                    <span class="weather-desc" id="result-condition">Unknown</span>
                                 </div>
                             </div>
                         </div>

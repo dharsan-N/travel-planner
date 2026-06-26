@@ -210,5 +210,131 @@
     "rating": 4.6,
     "reviews": 23,
     "image_url": null
+  },
+  "days inn by wyndham canastota/syracuse new york, united states of america": {
+    "rating": 3.5,
+    "reviews": 374,
+    "image_url": null,
+    "price_level": null
+  },
+  "flo's diner new york, united states of america": {
+    "rating": 4.6,
+    "reviews": 2461,
+    "image_url": null,
+    "price_level": "PRICE_LEVEL_INEXPENSIVE"
+  },
+  "starbucks new york, united states of america": {
+    "rating": 4.0,
+    "reviews": 2225,
+    "image_url": null,
+    "price_level": "PRICE_LEVEL_MODERATE"
+  },
+  "chick-fil-a new york, united states of america": {
+    "rating": 4.4,
+    "reviews": 3038,
+    "image_url": null,
+    "price_level": "PRICE_LEVEL_INEXPENSIVE"
+  },
+  "bande hotel osaka osaka prefecture, japan": {
+    "rating": 4.2,
+    "reviews": 363,
+    "image_url": null,
+    "price_level": null
+  },
+  "竹宿 osaka prefecture, japan": {
+    "rating": 4.6,
+    "reviews": 52,
+    "image_url": null,
+    "price_level": null
+  },
+  "乃宿 e-time 玉出別邸 osaka prefecture, japan": {
+    "rating": 4.2,
+    "reviews": 5,
+    "image_url": null,
+    "price_level": null
+  },
+  "cochi cafe osaka prefecture, japan": {
+    "rating": 3.6,
+    "reviews": 39,
+    "image_url": null,
+    "price_level": null
+  },
+  "マクドナルド osaka prefecture, japan": {
+    "rating": 3.3,
+    "reviews": 245,
+    "image_url": null,
+    "price_level": "PRICE_LEVEL_INEXPENSIVE"
+  },
+  "はま寿司 osaka prefecture, japan": {
+    "rating": 3.6,
+    "reviews": 2335,
+    "image_url": null,
+    "price_level": "PRICE_LEVEL_INEXPENSIVE"
+  },
+  "粉濱村道路元標 osaka prefecture, japan": {
+    "rating": 3.0,
+    "reviews": 1,
+    "image_url": null,
+    "price_level": null
+  },
+  "この付近　土佐藩住吉陣屋跡 osaka prefecture, japan": {
+    "rating": null,
+    "reviews": 0,
+    "image_url": null,
+    "price_level": null
+  },
+  "帝塚山古墳 osaka prefecture, japan": {
+    "rating": 3.6,
+    "reviews": 48,
+    "image_url": null,
+    "price_level": null
+  },
+  "rentinia inn greece": {
+    "rating": 4.8,
+    "reviews": 208,
+    "image_url": null,
+    "price_level": null
+  },
+  "λελούδα greece": {
+    "rating": null,
+    "reviews": 0,
+    "image_url": null,
+    "price_level": null
+  },
+  "maxim greece": {
+    "rating": 4.6,
+    "reviews": 854,
+    "image_url": null,
+    "price_level": null
+  },
+  "αννούλα greece": {
+    "rating": 4.1,
+    "reviews": 741,
+    "image_url": null,
+    "price_level": "PRICE_LEVEL_INEXPENSIVE"
+  },
+  "το γρέκι του ραγιά greece": {
+    "rating": 4.6,
+    "reviews": 88,
+    "image_url": null,
+    "price_level": null
+  },
+  "ακρόπολη των δολόπων greece": {
+    "rating": 4.8,
+    "reviews": 144991,
+    "image_url": null,
+    "price_level": null
+  },
+  "ο αχιλλέας στο άρμα του greece": {
+    "rating": 4.5,
+    "reviews": 1614,
+    "image_url": null,
+    "price_level": "PRICE_LEVEL_INEXPENSIVE"
+  },
+  "σχολή αξιωματικών ελας greece": {
+    "rating": null,
+    "reviews": 0,
+    "image_url": null,
+    "price_level": null
   }
 }

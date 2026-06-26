@@ -522,5 +522,7 @@ class GeoapifyService:
                         place["rating_source"] = "google"
                         if google_data.get("image_url"):
                             place["image_url"] = google_data["image_url"]
+                        if google_data.get("price_level"):
+                            place["price_level"] = google_data["price_level"]
         except Exception as e:
             logger.error(f"[GeoapifyService] Google Places enrichment failed: {e}")
