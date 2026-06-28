@@ -31,6 +31,127 @@ def get_currency_info(country: str) -> tuple:
         return '$', 'USD'
     return '₹', 'INR'
 
+def sort_places_by_companion(places: list, companion_type: str, category: str) -> list:
+    if not places:
+        return []
+    c_lower = companion_type.lower()
+    keywords = []
+    if category == "hotel":
+        if c_lower == "couple":
+            keywords = ["resort", "spa", "boutique", "villa", "grand", "palace", "luxury", "hotel"]
+        elif c_lower == "family":
+            keywords = ["resort", "suites", "inn", "cottage", "apartment", "family", "park", "hotel"]
+        elif c_lower == "friends":
+            keywords = ["hostel", "camp", "backpack", "budget", "inn", "guest", "lodge", "cabin"]
+        elif c_lower == "solo":
+            keywords = ["hostel", "capsule", "guest", "inn", "bed", "single", "hotel"]
+    elif category == "restaurant":
+        if c_lower == "couple":
+            keywords = ["cafe", "bistro", "wine", "lounge", "fine", "dining", "rooftop", "cuisine"]
+        elif c_lower == "family":
+            keywords = ["family", "kitchen", "diner", "food", "court", "restaurant", "buffet", "dhaba"]
+        elif c_lower == "friends":
+            keywords = ["pub", "bar", "brewery", "grill", "pizza", "burger", "cafe", "lounge", "club"]
+        elif c_lower == "solo":
+            keywords = ["cafe", "coffee", "bakery", "street", "diner", "tea", "express", "bistro"]
+    elif category == "attraction":
+        if c_lower == "couple":
+            keywords = ["viewpoint", "beach", "park", "garden", "lake", "sunset", "scenic", "river"]
+        elif c_lower == "family":
+            keywords = ["park", "museum", "zoo", "palace", "fort", "garden", "temple", "science", "aquarium"]
+        elif c_lower == "friends":
+            keywords = ["adventure", "trekking", "waterfall", "beach", "club", "shopping", "mall", "market", "hiking"]
+        elif c_lower == "solo":
+            keywords = ["museum", "temple", "art", "library", "historical", "hiking", "market", "monument"]
+            
+    def get_score(place):
+        name = place.get("name", "").lower()
+        cat = place.get("category", "").lower()
+        addr = place.get("address", "").lower()
+        score = 0
+        for kw in keywords:
+            if kw in name:
+                score += 3
+            if kw in cat:
+                score += 2
+            if kw in addr:
+                score += 1
+        rating = place.get("rating", 4.0)
+        score += rating * 2
+        return score
+    return sorted(places, key=get_score, reverse=True)
+
+def estimate_budget_needs(realtime_data: dict, days: int, budget: int, num_people: int, companion_type: str) -> dict:
+    country_resolved = realtime_data.get("country", "")
+    currency_symbol, currency_code = get_currency_info(country_resolved)
+    
+    if currency_symbol == '₹':
+        base_hotel = 2000
+        base_food = 600
+        base_transport = 300
+        base_activity = 250
+    else:
+        base_hotel = 120
+        base_food = 50
+        base_transport = 20
+        base_activity = 20
+        
+    hotel_factor = 1.0
+    food_factor = 1.0
+    transport_factor = 1.0
+    activity_factor = 1.0
+    
+    c_lower = companion_type.lower()
+    if c_lower == "couple":
+        hotel_factor = 1.25
+        food_factor = 1.2
+        transport_factor = 0.9
+    elif c_lower == "family":
+        hotel_factor = 1.1
+        food_factor = 1.0
+        transport_factor = 1.2
+        activity_factor = 1.1
+    elif c_lower == "friends":
+        hotel_factor = 0.75
+        food_factor = 0.9
+        transport_factor = 0.8
+        activity_factor = 1.3
+    elif c_lower == "solo":
+        hotel_factor = 0.85
+        food_factor = 1.0
+        transport_factor = 1.1
+        
+    if c_lower == "solo":
+        rooms_needed = num_people
+    else:
+        rooms_needed = max(1, (num_people + 1) // 2)
+        
+    daily_accommodation_cost = rooms_needed * base_hotel * hotel_factor
+    daily_food_cost = num_people * base_food * food_factor
+    daily_transport_cost = num_people * base_transport * transport_factor
+    daily_activity_cost = num_people * base_activity * activity_factor
+    
+    daily_total = daily_accommodation_cost + daily_food_cost + daily_transport_cost + daily_activity_cost
+    total_est_expenses = int(daily_total * days)
+    min_recommended = int(total_est_expenses * 0.8)
+    
+    is_enough = budget >= min_recommended
+    per_person = int(total_est_expenses // num_people) if num_people > 0 else total_est_expenses
+    
+    if is_enough:
+        note = f"Your budget of {currency_symbol}{budget:,} is sufficient for {num_people} {'person' if num_people == 1 else 'people'} for a {days}-day trip to {realtime_data.get('resolved_name', 'destination')}. Estimated typical expenses: {currency_symbol}{total_est_expenses:,}."
+    else:
+        note = f"Your budget of {currency_symbol}{budget:,} is tight. We recommend a minimum of {currency_symbol}{min_recommended:,} for {num_people} {'person' if num_people == 1 else 'people'} for {days} days."
+        
+    return {
+        "estimated_expenses": total_est_expenses,
+        "minimum_budget_required": min_recommended,
+        "per_person_estimated": per_person,
+        "is_budget_sufficient": is_enough,
+        "budget_suitability_note": note,
+        "currency_symbol": currency_symbol
+    }
+
 class GrokService:
     def __init__(self):
         # Support both GROQ_API_KEY and legacy GROK_API_KEY
@@ -63,7 +184,8 @@ class GrokService:
         travel_date: str = "",
         selected_hotels: list = None,
         selected_restaurants: list = None,
-        selected_attractions: list = None
+        selected_attractions: list = None,
+        companion_type: str = "Family"
     ) -> dict:
         try:
             budget = int(budget)
@@ -132,6 +254,11 @@ class GrokService:
         restaurants_list_full = realtime_data.get("restaurants", [])
         attractions_list_full = realtime_data.get("attractions", [])
 
+        # Sort based on companion type to prioritize matching spots
+        hotels_list_full = sort_places_by_companion(hotels_list_full, companion_type, "hotel")
+        restaurants_list_full = sort_places_by_companion(restaurants_list_full, companion_type, "restaurant")
+        attractions_list_full = sort_places_by_companion(attractions_list_full, companion_type, "attraction")
+
         hotels_list      = _get_selected_and_supplemented(hotels_list_full, selected_hotels, 5)
         restaurants_list = _get_selected_and_supplemented(restaurants_list_full, selected_restaurants, 5)
         attractions_list = _get_selected_and_supplemented(attractions_list_full, selected_attractions, 8)
@@ -160,6 +287,7 @@ class GrokService:
 Destination: {destination}
 Duration: {days} days
 Group Size: {num_people} {'person' if num_people == 1 else 'people'}
+Travel Group Companion Type: {companion_type}
 Total Group Budget: {currency_symbol}{budget} (approx. {currency_symbol}{per_person_budget} per person)
 Average Daily Group Budget limit: {currency_symbol}{average_daily_group_budget} (approx. {currency_symbol}{average_daily_per_person_budget} per person per day)
 {travel_context}
@@ -173,7 +301,13 @@ Real-time local data (sourced from: {data_source_label}):
 
 Requirements:
 1. morning/afternoon/evening: Detailed daily plan mentioning at least one of the real attractions, hotels, or restaurants listed above.
-2. narration: A warm, friendly, conversational voice-guided narration of the day's itinerary, written in the first-person ('We will...', 'I suggest...') as if a local tour guide is speaking directly to the traveler. Emphasize the highlight of the day, how the stops connect, and throw in a local tip. Keep it conversational, engaging, and rich (2-3 sentences).
+2. narration: A warm, friendly, highly descriptive and conversational voice-guided narration of the day's itinerary, written in the first-person ('We will...', 'I suggest...') as if a local tour guide is speaking directly to the traveler. 
+   You MUST adapt the tone strictly to the Travel Group Companion Type ({companion_type}):
+   - If Family: Warm, child-friendly, safe, structured, and family-oriented.
+   - If Couple: Romantic, cozy, relaxing, and memorable, emphasizing scenic views and intimate dining.
+   - If Friends: High energy, fun-filled, adventure-focused, highlighting group activities, social hubs, and optional nightlife.
+   - If Solo: Self-reflective, flexible, adventurous, highlighting local tips and solo safety.
+   Write at least 4-6 detailed sentences with vivid narration of how the day unfolds, the specific vibe of each place, and transitions between stops.
 3. accommodation: Select a real hotel from the list above (or state a suitable default) and recommend it with price ranges appropriate for the budget tier.
 4. food: Suggest breakfast, lunch, and dinner, incorporating the real restaurant names from above.
 5. transport: Specify the best local transport modes for the daily route and list estimated costs.
@@ -236,7 +370,7 @@ Return ONLY clean JSON matching this schema exactly:
 
         if not self.api_key:
             logger.warning("GROQ_API_KEY/LLM_API_KEY not found. Using local mock generator.")
-            return self._generate_mock_itinerary(destination, days, budget, interests, realtime_data, num_people, travel_date)
+            return self._generate_mock_itinerary(destination, days, budget, interests, realtime_data, num_people, travel_date, companion_type)
 
         try:
             headers = {
@@ -334,7 +468,7 @@ Return ONLY clean JSON matching this schema exactly:
 
         except Exception as e:
             logger.error(f"LLM generation failed: {e}. Falling back to mock generator.")
-            return self._generate_mock_itinerary(destination, days, budget, interests, realtime_data, num_people, travel_date)
+            return self._generate_mock_itinerary(destination, days, budget, interests, realtime_data, num_people, travel_date, companion_type)
 
     def _generate_mock_itinerary(
         self,
@@ -344,9 +478,10 @@ Return ONLY clean JSON matching this schema exactly:
         interests: list,
         realtime_data: dict,
         num_people: int = 1,
-        travel_date: str = ""
+        travel_date: str = "",
+        companion_type: str = "Family"
     ) -> dict:
-        logger.info(f"Generating simplified fallback mock itinerary for {destination}")
+        logger.info(f"Generating simplified fallback mock itinerary for {destination} with type {companion_type}")
         
         country_resolved = realtime_data.get("country", "")
         currency_symbol, currency_code = get_currency_info(country_resolved)
@@ -364,22 +499,43 @@ Return ONLY clean JSON matching this schema exactly:
 
         itinerary_list = []
         average_daily_budget = budget // max(1, days)
-        daily_accommodation = int(average_daily_budget * 0.45)
-        daily_food = int(average_daily_budget * 0.25)
-        daily_activities = int(average_daily_budget * 0.15)
+        
+        # Adjust percentages based on companion type
+        c_lower = companion_type.lower()
+        if c_lower == "couple":
+            p_hotel, p_food, p_activities = 0.50, 0.28, 0.12
+        elif c_lower == "friends":
+            p_hotel, p_food, p_activities = 0.35, 0.25, 0.25
+        elif c_lower == "solo":
+            p_hotel, p_food, p_activities = 0.48, 0.24, 0.16
+        else: # family
+            p_hotel, p_food, p_activities = 0.42, 0.26, 0.18
+            
+        daily_accommodation = int(average_daily_budget * p_hotel)
+        daily_food = int(average_daily_budget * p_food)
+        daily_activities = int(average_daily_budget * p_activities)
         daily_transport = average_daily_budget - (daily_accommodation + daily_food + daily_activities)
         
         per_person = average_daily_budget // max(1, num_people)
 
         for d in range(1, days + 1):
+            if c_lower == "couple":
+                narration = f"Welcome to Day {d} of your romantic getaway in {destination}! Wake up to a relaxed morning and head over to explore the beautiful and scenic {a1}, perfect for taking some memorable photos together. In the afternoon, take a hand-in-hand stroll through the picturesque grounds of {a2}, enjoying the quiet atmosphere. As the sun sets, look forward to an intimate, cozy dinner at {r2}, where you can savor local delicacies in a warm, romantic setting."
+            elif c_lower == "family":
+                narration = f"Welcome to Day {d} of your family holiday in {destination}! We start our day with an exciting, family-friendly visit to {a1}, which offers great activities and learning opportunities for all age groups. In the afternoon, we'll make our way to the safe and spacious open areas of {a2}, allowing the kids to explore while the adults relax. To wrap up the day, we'll enjoy a wholesome, comfortable dinner at {r2}, known for its welcoming family ambiance and diverse menu."
+            elif c_lower == "friends":
+                narration = f"Welcome to Day {d} of your epic group trip in {destination}! Gear up for a fun, energetic morning as we check out the vibrant sights of {a1}. Afterwards, we will head over to {a2} for some group photos and lighthearted exploring. When evening rolls around, the night is young—we'll head out to grab drinks and share high-energy laughs at {r2}, followed by exploring the best local nightlife and social hangouts in the area!"
+            else: # solo
+                narration = f"Welcome to Day {d} of your solo adventure in {destination}! Embrace the flexibility of solo travel this morning as you leisurely discover the local history at {a1} at your own pace. In the afternoon, wander through the historic corridors of {a2}, perfect for self-reflection and meeting fellow travelers. As the evening sets in, find a cozy corner at {r2} to journal, enjoy a local meal, and chat with the friendly staff about local secrets."
+
             itinerary_list.append({
                 "day": d,
-                "narration": f"Welcome to Day {d} in {destination}! We will start our morning exploring the scenic {a1}. After that, I recommend heading to {a2} for a walk. Finally, wrap up your evening with beautiful sunset views and dining at {r2}.",
+                "narration": narration,
                 "morning": f"9:00 AM – Visit {a1} and explore the main highlights.",
                 "afternoon": f"1:30 PM – Check out {a2} for a local sightseeing walk.",
                 "evening": "6:00 PM – Enjoy a relaxing walk and sunset views.",
                 "accommodation": f"Stay at {primary_hotel} — clean rooms and great service",
-                "hotel_price": f"{currency_symbol}{daily_accommodation // num_people}/night per person",
+                "hotel_price": f"{currency_symbol}{daily_accommodation // num_people}/night per person" if num_people > 0 else f"{currency_symbol}{daily_accommodation}/night",
                 "food": f"Breakfast at hotel; Lunch at {r1} (try local thali); Dinner at {r2}",
                 "transport": "Auto-rickshaw rentals and walking",
                 "entry_fees": [
@@ -396,8 +552,9 @@ Return ONLY clean JSON matching this schema exactly:
                 "estimated_cost": f"{currency_symbol}{average_daily_budget}"
             })
 
-        # Base minimum budget calculation on 400 units per person per day for economical trips
-        min_budget = min(budget, days * num_people * 600) if budget >= days * num_people * 400 else days * num_people * 400
+        # Calculate a realistic minimum budget using our helper
+        est_needs = estimate_budget_needs(realtime_data, days, budget, num_people, companion_type)
+        min_budget = est_needs["minimum_budget_required"]
 
         return {
             "itinerary": itinerary_list,
@@ -410,7 +567,7 @@ Return ONLY clean JSON matching this schema exactly:
             "rainy_warning": False,
             "alternate_dates": "",
             "minimum_budget_required": min_budget,
-            "budget_suitability_note": f"Estimated minimum budget is {currency_symbol}{min_budget} (assuming basic daily expenses of {currency_symbol}400/person)."
+            "budget_suitability_note": est_needs["budget_suitability_note"]
         }
 
     def _adjust_costs_to_budget(self, itinerary: list, total_budget: int, num_people: int, currency_symbol: str = "₹"):

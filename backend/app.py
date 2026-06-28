@@ -41,16 +41,42 @@ def get_spotlights_endpoint():
         destination = data.get("destination", "").strip()
         if not destination:
             return jsonify({"error": "Destination is required."}), 400
+            
+        days = int(data.get("days", 5))
+        budget = int(data.get("budget", 50000))
+        num_people = int(data.get("num_people", 2))
+        companion_type = data.get("companion_type", "Family").strip()
         
-        logger.info(f"Retrieving spotlights for: {destination}")
+        logger.info(f"Retrieving spotlights for: {destination} (Group size: {num_people}, Budget: {budget}, Companion: {companion_type})")
         realtime_data = grok_service.geoapify_service.get_all_data(destination)
         if not realtime_data:
             return jsonify({"error": "Destination could not be geolocated or resolved."}), 404
             
+        # Import helper functions
+        from grok_service import sort_places_by_companion, estimate_budget_needs
+        
+        # Sort items dynamically by companion type in-place
+        if "hotels" in realtime_data:
+            realtime_data["hotels"] = sort_places_by_companion(realtime_data["hotels"], companion_type, "hotel")
+        if "restaurants" in realtime_data:
+            realtime_data["restaurants"] = sort_places_by_companion(realtime_data["restaurants"], companion_type, "restaurant")
+        if "attractions" in realtime_data:
+            realtime_data["attractions"] = sort_places_by_companion(realtime_data["attractions"], companion_type, "attraction")
+            
+        # Estimate budget requirements
+        budget_estimates = estimate_budget_needs(
+            realtime_data, days, budget, num_people, companion_type
+        )
+            
         return jsonify({
             "destination": destination,
             "realtime_data": realtime_data,
-            "country": realtime_data.get("country", "")
+            "country": realtime_data.get("country", ""),
+            "estimated_expenses": budget_estimates["estimated_expenses"],
+            "minimum_budget_required": budget_estimates["minimum_budget_required"],
+            "per_person_estimated": budget_estimates["per_person_estimated"],
+            "is_budget_sufficient": budget_estimates["is_budget_sufficient"],
+            "budget_suitability_note": budget_estimates["budget_suitability_note"]
         })
     except Exception as e:
         logger.exception("Error during spotlights retrieval")
@@ -70,6 +96,7 @@ def generate_itinerary_endpoint():
         selected_hotels = data.get("selected_hotels", [])
         selected_restaurants = data.get("selected_restaurants", [])
         selected_attractions = data.get("selected_attractions", [])
+        companion_type = data.get("companion_type", "Family").strip()
 
         if not destination:
             return jsonify({"error": "Destination is required."}), 400
@@ -101,7 +128,7 @@ def generate_itinerary_endpoint():
 
         logger.info(
             f"Generating itinerary for: {destination} | People: {num_people} | "
-            f"Budget: ₹{budget} | Date: '{travel_date}' | Preferences: {preferences} | "
+            f"Budget: ₹{budget} | Date: '{travel_date}' | Companion: {companion_type} | "
             f"Selected Hotels: {len(selected_hotels)} | Selected Attractions: {len(selected_attractions)}"
         )
 
@@ -111,7 +138,8 @@ def generate_itinerary_endpoint():
             num_people=num_people, travel_date=travel_date,
             selected_hotels=selected_hotels,
             selected_restaurants=selected_restaurants,
-            selected_attractions=selected_attractions
+            selected_attractions=selected_attractions,
+            companion_type=companion_type
         )
 
         response_payload = {

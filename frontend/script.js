@@ -82,8 +82,6 @@ function updateFormCurrencyLabels(country) {
     const iconEl = document.getElementById('budget-currency-icon');
     if (codeSpan) codeSpan.textContent = code;
     if (iconEl) iconEl.className = iconClass;
-    
-    updateBudgetPreview();
 }
 
 // ── Smart currency detection from destination text ─────────────────────────
@@ -191,24 +189,7 @@ const getApiUrl = (endpoint = 'generate-itinerary') => {
     return 'http://127.0.0.1:5000/' + endpoint;
 };
 
-// ── Live per-person budget preview ──────────────────────────────────────────
-function updateBudgetPreview() {
-    const budget     = parseInt(document.getElementById('budget').value)     || 0;
-    const numPeople  = parseInt(document.getElementById('num_people').value) || 1;
-    const perPerson  = numPeople > 0 ? Math.round(budget / numPeople) : budget;
-    const previewEl  = document.getElementById('budget-preview-text');
-    if (previewEl) {
-        const symbol = getCurrencySymbol(activeCountry);
-        const locale = (symbol === '₹') ? 'en-IN' : 'en-US';
-        previewEl.textContent = `${symbol}${perPerson.toLocaleString(locale)} per person`;
-    }
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-    const budgetInput    = document.getElementById('budget');
-    const numPeopleInput = document.getElementById('num_people');
-    if (budgetInput)    budgetInput.addEventListener('input',    updateBudgetPreview);
-    if (numPeopleInput) numPeopleInput.addEventListener('input', updateBudgetPreview);
     
     const destInput = document.getElementById('destination');
     if (destInput) {
@@ -229,8 +210,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 500);
         });
     }
-    
-    updateBudgetPreview();
 
     // Restore state if returning from itinerary page
     if (localStorage.getItem('restoreState') === 'true') {
@@ -251,6 +230,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (document.getElementById('travel_date')) {
                 document.getElementById('travel_date').value = currentInputs.travel_date;
+            }
+            if (document.getElementById('companion_type')) {
+                document.getElementById('companion_type').value = currentInputs.companion_type || "Family";
             }
             
             // Check correct checkboxes for interests
@@ -314,6 +296,7 @@ async function handleFormSubmit() {
     const preferencesInput  = document.getElementById('preferences');
     const numPeopleInput    = document.getElementById('num_people');
     const travelDateInput   = document.getElementById('travel_date');
+    const companionTypeInput = document.getElementById('companion_type');
 
     const interestCheckboxes = document.querySelectorAll('input[name="interests"]:checked');
     const interests = Array.from(interestCheckboxes).map(cb => cb.value);
@@ -324,6 +307,7 @@ async function handleFormSubmit() {
     const preferences  = preferencesInput ? preferencesInput.value.trim() : "";
     const num_people   = parseInt(numPeopleInput ? numPeopleInput.value : 1) || 1;
     const travel_date  = travelDateInput ? travelDateInput.value.trim() : "";
+    const companion_type = companionTypeInput ? companionTypeInput.value : "Family";
 
     currentInputs = { 
         destination, 
@@ -333,6 +317,7 @@ async function handleFormSubmit() {
         preferences, 
         num_people, 
         travel_date,
+        companion_type,
         selected_hotels: [],
         selected_restaurants: [],
         selected_attractions: []
@@ -359,7 +344,14 @@ async function fetchSpotlights(inputs) {
         const response = await fetch(getApiUrl('get-spotlights'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ destination: inputs.destination })
+            body: JSON.stringify({
+                destination: inputs.destination,
+                days: inputs.days,
+                budget: inputs.budget,
+                num_people: inputs.num_people,
+                companion_type: inputs.companion_type,
+                interests: inputs.interests
+            })
         });
 
         if (!response.ok) {
@@ -608,6 +600,11 @@ function renderResults(data, userBudget, numPeople) {
 
     document.getElementById('result-travellers').innerHTML =
         `<i class="fa-solid fa-users"></i> ${numPeople}`;
+
+    const companionTypeEl = document.getElementById('result-companion-type');
+    if (companionTypeEl) {
+        companionTypeEl.textContent = (currentInputs && currentInputs.companion_type) || "Family";
+    }
 
     // Travel date badge
     const travelDateItem = document.getElementById('result-travel-date-item');
@@ -937,20 +934,65 @@ function renderSpotlightsOnly(data, userBudget, numPeople) {
     document.getElementById('result-destination-title').textContent = data.destination;
     fetchDestinationImage(data.destination);
 
-    // Initialise budget bar with user values
+    // Initialise budget bar with user values or estimated values if available
     document.getElementById('result-total-budget').textContent = `${symbol}${userBudget.toLocaleString(locale)}`;
-    document.getElementById('result-estimated-budget').textContent = `—`;
-    document.getElementById('result-per-person').textContent = `—`;
+    
+    const estExpenses = data.estimated_expenses || 0;
+    const minRecommended = data.minimum_budget_required || 0;
+    const perPersonEst = data.per_person_estimated || 0;
+    
+    document.getElementById('result-estimated-budget').textContent = estExpenses > 0 
+        ? `${symbol}${estExpenses.toLocaleString(locale)}`
+        : `—`;
+    document.getElementById('result-per-person').textContent = perPersonEst > 0
+        ? `${symbol}${perPersonEst.toLocaleString(locale)}`
+        : `—`;
     document.getElementById('result-travellers').innerHTML = `<i class="fa-solid fa-users"></i> ${numPeople}`;
     
     const minRecEl = document.getElementById('result-min-recommended-budget');
-    if (minRecEl) minRecEl.textContent = '—';
+    if (minRecEl) {
+        minRecEl.textContent = minRecommended > 0 
+            ? `${symbol}${minRecommended.toLocaleString(locale)}`
+            : `—`;
+    }
+
+    const companionTypeEl = document.getElementById('result-companion-type');
+    if (companionTypeEl) {
+        companionTypeEl.textContent = (currentInputs && currentInputs.companion_type) || "Family";
+    }
+
+    // Display budget warning banner if budget is insufficient
+    const budgetWarningBanner = document.getElementById('budget-warning-banner');
+    const budgetWarningBody   = document.getElementById('budget-banner-body');
+    const budgetRecommendedVal= document.getElementById('budget-recommended-val');
+    const budgetBannerTitle   = document.getElementById('budget-banner-title');
+    
+    if (budgetWarningBanner) {
+        const isBudgetInsufficient = minRecommended > 0 && userBudget < minRecommended;
+        if (data.budget_suitability_note) {
+            if (budgetBannerTitle) {
+                budgetBannerTitle.textContent = isBudgetInsufficient
+                    ? '⚠️ Budget Check — Recommended Minimum Exceeded'
+                    : '✅ Budget Check — Your Budget Looks Good!';
+            }
+            if (budgetWarningBody) {
+                budgetWarningBody.textContent = data.budget_suitability_note;
+            }
+            if (budgetRecommendedVal && minRecommended > 0) {
+                budgetRecommendedVal.textContent = `${symbol}${minRecommended.toLocaleString(locale)}`;
+            }
+            budgetWarningBanner.classList.remove('hidden');
+            budgetWarningBanner.classList.toggle('budget-ok', !isBudgetInsufficient);
+            budgetWarningBanner.classList.toggle('budget-warn', isBudgetInsufficient);
+        } else {
+            budgetWarningBanner.classList.add('hidden');
+        }
+    }
 
     // Hide warnings/time/weather cards for now
     const weatherCard = document.getElementById('weather-card');
     if (weatherCard) weatherCard.classList.add('hidden');
     document.getElementById('best-time-card').classList.add('hidden');
-    document.getElementById('budget-warning-banner').classList.add('hidden');
     document.getElementById('rainy-warning-banner').classList.add('hidden');
     document.getElementById('safety-alerts-card').classList.add('hidden');
 

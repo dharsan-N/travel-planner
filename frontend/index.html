@@ -86,6 +86,22 @@
                                 <input type="number" id="num_people" name="num_people" min="1" max="20" value="2" required>
                             </div>
                         </div>
+
+                        <!-- Companion Type -->
+                        <div class="form-group col">
+                            <label for="companion_type">
+                                <i class="fa-solid fa-people-group"></i> Companion Type
+                            </label>
+                            <div class="input-wrapper">
+                                <select id="companion_type" name="companion_type" required>
+                                    <option value="Family" selected>Family</option>
+                                    <option value="Couple">Couple</option>
+                                    <option value="Friends">Friends</option>
+                                    <option value="Solo">Solo</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down input-decor-right"></i>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-row">
@@ -112,11 +128,7 @@
                         </div>
                     </div>
 
-                    <!-- Per-person budget live preview -->
-                    <div id="budget-preview" class="budget-preview-bar">
-                        <i class="fa-solid fa-person"></i>
-                        <span id="budget-preview-text">₹25,000 per person</span>
-                    </div>
+
 
                     <!-- Interests Selection (Multi-select Checkbox pills) -->
                     <div class="form-group">
@@ -302,6 +314,10 @@
                             <div class="budget-item">
                                 <span class="label">Travellers</span>
                                 <span class="val" id="result-travellers"><i class="fa-solid fa-users"></i> 2</span>
+                            </div>
+                            <div class="budget-item" id="result-companion-item">
+                                <span class="label">Trip Type</span>
+                                <span class="val" id="result-companion-type">—</span>
                             </div>
                             <div class="budget-item" id="result-travel-date-item" style="display:none">
                                 <span class="label">Travel Month</span>

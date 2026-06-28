@@ -133,6 +133,13 @@ function renderItineraryResults(data, userBudget, numPeople) {
     document.getElementById('result-travellers').innerHTML =
         `<i class="fa-solid fa-users"></i> ${numPeople}`;
 
+    const companionTypeEl = document.getElementById('result-companion-type');
+    if (companionTypeEl) {
+        const inputsStr = localStorage.getItem('currentInputs');
+        const inputs = inputsStr ? JSON.parse(inputsStr) : {};
+        companionTypeEl.textContent = inputs.companion_type || "Family";
+    }
+
     // Travel date badge
     const travelDateItem = document.getElementById('result-travel-date-item');
     const travelDateEl   = document.getElementById('result-travel-date');
